@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Welcome - Travel Bot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --tg-theme-bg-color: #ffffff;
+      --tg-theme-text-color: #000000;
+      --tg-theme-hint-color: #999999;
+      --tg-theme-link-color: #2481cc;
+      --tg-theme-button-color: #2481cc;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-secondary-bg-color: #f4f4f5;
+      
+      --primary: #2563eb;
+      --primary-light: #dbeafe;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 50%, #fef3c7 100%);
+      color: var(--tg-theme-text-color, var(--text));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 420px;
+      animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .card {
+      background: var(--tg-theme-bg-color, var(--surface));
+      border-radius: 24px;
+      padding: 40px 28px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--tg-theme-text-color, var(--text));
+      line-height: 1.2;
+    }
+    
+    .subtitle {
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      font-size: 15px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+    
+    .requirement-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+      color: var(--primary);
+      padding: 12px 20px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 16px 0 24px;
+      border: 2px solid rgba(37, 99, 235, 0.1);
+    }
+    
+    .feature-list {
+      text-align: left;
+      margin: 24px 0;
+      background: var(--tg-theme-secondary-bg-color, #f8fafc);
+      padding: 20px;
+      border-radius: 16px;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      color: var(--tg-theme-text-color, var(--text));
+      font-size: 15px;
+    }
+    
+    .feature-item::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--success);
+      color: white;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    
+    .btn:active {
+      transform: scale(0.96);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .google-icon {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    
+    .alert {
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: left;
+      display: none;
+      animation: shake 0.5s ease;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      border: 2px solid var(--danger);
+      color: #7f1d1d;
+    }
+    
+    .footer-text {
+      margin-top: 24px;
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      line-height: 1.6;
+    }
+    
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      font-size: 13px;
+    }
+    
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">✈️</div>
+      <h1>Welcome to Travel Bot</h1>
+      <p class="subtitle">Plan and manage your group trips effortlessly with your team</p>
+      
+      <div class="requirement-badge">
+        👨‍🎓 Student Email Required: @newuu.uz
+      </div>
+      
+      <div class="feature-list">
+        <div class="feature-item">Organize group travel plans</div>
+        <div class="feature-item">Track participants & payments</div>
+        <div class="feature-item">Secure Google authentication</div>
+      </div>
+      
+      <button class="btn" id="registerBtn">
+        <span class="google-icon">G</span>
+        <span id="btnText">Sign in with Google</span>
+      </button>
+      
+      <div class="alert alert-error" id="error"></div>
+      
+      <div style="background: #f0f9ff; border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left;">
+        <div style="font-weight: 600; font-size: 14px; color: #0369a1; margin-bottom: 8px;">
+          🌐 Browser Sign-In Required
+        </div>
+        <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+          For security, Google sign-in will open in your default browser. After signing in, you'll be redirected back to Telegram automatically.
+        </div>
+      </div>
+      
+      <p class="footer-text">
+        By continuing, you agree to use your @newuu.uz student account for authentication
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Check if running in Telegram WebApp - must be first!
+    (function() {
+      const tg = window.Telegram?.WebApp;
+      
+      // Check for initData - this is the definitive proof we're in Telegram
+      const hasInitData = tg && tg.initData && tg.initData.length > 0;
+      const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
+      
+      // If no initData or user, we're NOT in Telegram WebApp
+      if (!hasInitData && !hasTelegramUser) {
+        document.body.innerHTML = `
+          <div style="
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          ">
+            <div style="
+              max-width: 400px;
+              background: white;
+              border-radius: 20px;
+              padding: 40px 30px;
+              text-align: center;
+              box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            ">
+              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">
+                Telegram Required
+              </h1>
+              <p style="color: #64748b; margin-bottom: 24px; line-height: 1.6;">
+                This page can only be accessed through the Telegram app for security reasons.
+              </p>
+              <div style="
+                background: #f1f5f9;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 20px;
+                text-align: left;
+              ">
+                <div style="font-weight: 700; margin-bottom: 12px; color: #0f172a;">📱 How to Access:</div>
+                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
+                  1. Open <strong>Telegram</strong> app<br>
+                  2. Search for <strong>@pu_travel_bot</strong><br>
+                  3. Send <strong>/start</strong><br>
+                  4. Tap the button to access features
+                </div>
+              </div>
+              <a href="https://telegram.org/" 
+                 style="
+                   display: inline-block;
+                   padding: 14px 28px;
+                   background: linear-gradient(135deg, #0088cc, #006699);
+                   color: white;
+                   text-decoration: none;
+                   border-radius: 12px;
+                   font-weight: 700;
+                   box-shadow: 0 4px 12px rgba(0,136,204,0.3);
+                 ">
+                ✈️ Download Telegram
+              </a>
+            </div>
+          </div>
+        `;
+        // Prevent any scripts from running
+        throw new Error('Not in Telegram WebApp - initData missing');
+      }
+    })();
+    
+    const tg = window.Telegram.WebApp;
+    
+    try {
+      tg?.ready();
+      tg?.expand();
+      tg?.setBackgroundColor('#dbeafe');
+      tg?.setHeaderColor('#dbeafe');
+    } catch(e) {}
+    
+    const CLIENT_ID = "{{ client_id }}";
+    const REDIRECT_URI = "{{ redirect_uri }}";
+    
+    function showError(message) {
+      const errorEl = document.getElementById('error');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      
+      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+      
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 5000);
+    }
+    
+    document.getElementById('registerBtn').onclick = function() {
+      const btn = this;
+      const btnText = document.getElementById('btnText');
+      const originalText = btnText.textContent;
+      
+      try {
+        // Check if opened from Telegram
+        if (!tg?.initDataUnsafe?.user?.id) {
+          showError('⚠️ Please open this page from the Telegram bot.');
+          return;
+        }
+        
+        const telegramId = tg.initDataUnsafe.user.id;
+        
+        // Check OAuth configuration
+        if (!CLIENT_ID || !REDIRECT_URI) {
+          showError('⚠️ OAuth is not configured properly. Please contact support.');
+          return;
+        }
+        
+        // Show loading state
+        btn.disabled = true;
+        btnText.innerHTML = '<span class="loading-spinner"></span> Redirecting...';
+        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
+        
+        // Build OAuth URL
+        const oauthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+        oauthUrl.searchParams.set('client_id', CLIENT_ID);
+        oauthUrl.searchParams.set('redirect_uri', REDIRECT_URI);
+        oauthUrl.searchParams.set('response_type', 'code');
+        oauthUrl.searchParams.set('scope', 'openid email profile');
+        oauthUrl.searchParams.set('state', String(telegramId));
+        oauthUrl.searchParams.set('prompt', 'select_account');
+        oauthUrl.searchParams.set('hd', 'newuu.uz');
+        
+        // Open OAuth in external browser (required by Google)
+        setTimeout(() => {
+          if (tg?.openLink) {
+            // Open in external browser to avoid "disallowed_useragent" error
+            tg.openLink(oauthUrl.toString());
+            
+            // Close WebApp immediately after opening browser
+            setTimeout(() => {
+              try {
+                tg.close();
+              } catch(e) {
+                console.log('Could not close WebApp:', e);
+              }
+            }, 500);
+          } else {
+            // Fallback for non-Telegram environments
+            window.location.href = oauthUrl.toString();
+          }
+        }, 300);
+        
+      } catch(err) {
+        showError(err.message || 'An unexpected error occurred');
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    };
+    
+    // Auto-hide error after 5 seconds
+    const errorObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.target.style.display === 'block') {
+          setTimeout(() => {
+            mutation.target.style.display = 'none';
+          }, 5000);
+        }
+      });
+    });
+    
+    const errorEl = document.getElementById('error');
+    errorObserver.observe(errorEl, { attributes: true, attributeFilter: ['style'] });
+  </script>
+</body>
+</html>

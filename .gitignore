@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# FastAPI/uvicorn hot reload artifacts
+*.pid
+
+# IDE
+.vscode/
+.idea/
+
+# Local env (keep .env untracked by default; remove if you want to commit it)
+.env

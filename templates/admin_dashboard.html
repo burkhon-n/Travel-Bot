@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Admin Dashboard</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --tg-theme-bg-color: #ffffff;
+      --tg-theme-text-color: #000000;
+      --tg-theme-hint-color: #999999;
+      --tg-theme-link-color: #2481cc;
+      --tg-theme-button-color: #2481cc;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-secondary-bg-color: #f4f4f5;
+      
+      --primary: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--tg-theme-bg-color, var(--bg));
+      color: var(--tg-theme-text-color, var(--text));
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .header {
+      background: var(--tg-theme-button-color, var(--primary));
+      color: var(--tg-theme-button-text-color, #fff);
+      padding: 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    
+    .container {
+      padding: 16px;
+      max-width: 100%;
+    }
+    
+    .trip-card {
+      background: var(--tg-theme-secondary-bg-color, var(--surface));
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid var(--border);
+    }
+    
+    .trip-card:active {
+      transform: scale(0.98);
+    }
+    
+    .trip-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+    
+    .trip-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color, var(--text));
+      margin-bottom: 4px;
+    }
+    
+    .trip-name a {
+      color: inherit;
+      text-decoration: none;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    
+    .badge-active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .badge-closed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .badge-cancelled {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .trip-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .stat-item {
+      background: var(--tg-theme-bg-color, #fff);
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    .group-id {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+      background: var(--tg-theme-bg-color, #f1f5f9);
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    
+    .btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    
+    .btn:active {
+      transform: scale(0.96);
+    }
+    
+    .btn-primary {
+      background: var(--tg-theme-button-color, var(--primary));
+      color: var(--tg-theme-button-text-color, #fff);
+    }
+    
+    .btn-secondary {
+      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
+      color: var(--tg-theme-text-color, var(--text));
+      border: 1px solid var(--border);
+    }
+    
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+      color: #fff;
+    }
+    
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    
+    .seats-info {
+      font-size: 13px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .seats-info strong {
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .trip-card {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    
+    .empty-state-text {
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Admin Dashboard</h1>
+    <p>Manage trips and members</p>
+  </div>
+  
+  <div class="container">
+    {% for t in trips %}
+    <div class="trip-card">
+      <div class="trip-header">
+        <div>
+          <div class="trip-name">
+            <a href="/admin/trip/{{ t.id }}">{{ t.name }}</a>
+          </div>
+          <span class="group-id">{{ t.group_id }}</span>
+          <div style="margin-top: 6px; font-size: 14px; color: var(--tg-theme-hint-color, #64748b);">
+            💰 {{ "{:,}".format(t.price) }} UZS
+          </div>
+        </div>
+        <span class="badge badge-{{ t.status }}">{{ t.status }}</span>
+      </div>
+      
+      <div class="trip-stats">
+        <div class="stat-item">
+          <div class="stat-label">Registered</div>
+          <div class="stat-value">{{ t.registered }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Half Paid</div>
+          <div class="stat-value">{{ t.half }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Full Paid</div>
+          <div class="stat-value">{{ t.full }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Paid</div>
+          <div class="stat-value">{{ t.paid }}</div>
+        </div>
+      </div>
+      
+      {% if t.participant_limit %}
+      <div class="seats-info">
+        <strong>{{ t.participant_limit - t.paid }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
+      </div>
+      {% endif %}
+      
+      <div class="action-grid" style="margin-top: 12px;">
+        <button class="btn btn-success js-trip-status" data-trip-id="{{ t.id }}" data-status="active">✓ Activate</button>
+        <button class="btn btn-warning js-trip-status" data-trip-id="{{ t.id }}" data-status="closed">⊗ Close</button>
+        <button class="btn btn-danger js-trip-status" data-trip-id="{{ t.id }}" data-status="cancelled">✕ Cancel</button>
+        <button class="btn btn-primary js-regen" data-trip-id="{{ t.id }}">↻ Links</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    // Check if running in Telegram WebApp - must be first!
+    (function() {
+      const tg = window.Telegram?.WebApp;
+      
+      // Check for initData - this is the definitive proof we're in Telegram
+      const hasInitData = tg && tg.initData && tg.initData.length > 0;
+      const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
+      
+      if (!hasInitData && !hasTelegramUser) {
+        document.body.innerHTML = `
+          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="max-width: 400px; background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Admin Access Required</h1>
+              <p style="color: #64748b; margin-bottom: 24px;">Admin dashboard can only be accessed through Telegram bot.</p>
+              <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
+                <div style="font-weight: 700; margin-bottom: 12px;">📱 For Admins:</div>
+                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
+                  1. Open bot in <strong>Telegram</strong><br>
+                  2. Send <strong>/admin</strong> command<br>
+                  3. Tap "Open Admin Dashboard"
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        throw new Error('Not in Telegram WebApp - initData missing');
+      }
+    })();
+    
+    const tg = window.Telegram.WebApp;
+    
+    try {
+      tg?.ready();
+      tg?.expand();
+      tg?.setHeaderColor('secondary_bg_color');
+      tg?.setBackgroundColor('#f8fafc');
+    } catch(e) {}
+    
+    async function postJSON(url, body) {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Telegram-Id': (window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0)
+        },
+        body: JSON.stringify(body || {})
+      });
+      
+      if (!r.ok) {
+        let m = 'Request failed';
+        try {
+          const d = await r.json();
+          m = d.detail || m;
+        } catch {}
+        throw new Error(m);
+      }
+      return r.json();
+    }
+    
+    function toast(m, type) {
+      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(type === 'error' ? 'error' : 'success');
+      window.Telegram?.WebApp?.showAlert(m);
+    }
+    
+    document.addEventListener('click', async e => {
+      const t = e.target.closest('button');
+      if (!t) return;
+      
+      const originalText = t.textContent;
+      const originalDisabled = t.disabled;
+      
+      try {
+        t.disabled = true;
+        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
+        
+        if (t.matches('.js-trip-status')) {
+          await postJSON(`/admin/api/trip/${t.dataset.tripId}/status`, {
+            status: t.dataset.status
+          });
+          toast('Status updated successfully', 'success');
+          setTimeout(() => location.reload(), 500);
+        }
+        
+        if (t.matches('.js-regen')) {
+          await postJSON(`/admin/api/trip/${t.dataset.tripId}/regenerate-links`, {});
+          toast('Links regenerated successfully', 'success');
+          setTimeout(() => location.reload(), 500);
+        }
+      } catch(err) {
+        toast(err.message || 'Error occurred', 'error');
+        t.disabled = originalDisabled;
+      }
+    });
+  </script>
+</body>
+</html>

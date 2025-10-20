@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Welcome! - Travel Bot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --tg-theme-bg-color: #ffffff;
+      --tg-theme-text-color: #000000;
+      --tg-theme-hint-color: #999999;
+      --tg-theme-button-color: #2481cc;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-secondary-bg-color: #f4f4f5;
+      
+      --primary: #2563eb;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 50%, #6ee7b7 100%);
+      color: var(--tg-theme-text-color, var(--text));
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 420px;
+      animation: successPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @keyframes successPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    
+    .card {
+      background: var(--tg-theme-bg-color, var(--surface));
+      border-radius: 24px;
+      padding: 40px 28px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    
+    .success-icon {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--success-light) 0%, #a7f3d0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+      }
+    }
+    
+    .success-icon span {
+      font-size: 52px;
+      animation: bounce 0.8s ease-in-out 0.3s;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    h2 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    .welcome-text {
+      font-size: 16px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      margin-bottom: 8px;
+    }
+    
+    .welcome-text strong {
+      color: var(--tg-theme-text-color, var(--text));
+      font-weight: 700;
+    }
+    
+    .hint {
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+    
+    .info-box {
+      background: var(--tg-theme-secondary-bg-color, #f8fafc);
+      padding: 16px;
+      border-radius: 16px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    .info-item::before {
+      content: '✓';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: var(--success);
+      color: white;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .btn:active {
+      transform: scale(0.96);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--tg-theme-button-color, var(--primary)) 0%, #1d4ed8 100%);
+      color: var(--tg-theme-button-text-color, #fff);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
+      color: var(--tg-theme-text-color, var(--text));
+      border: 1px solid var(--border);
+    }
+    
+    .auto-close-notice {
+      display: none;
+      margin-top: 20px;
+      padding: 12px;
+      background: var(--tg-theme-secondary-bg-color, #fff3cd);
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+    }
+    
+    .countdown {
+      font-weight: 700;
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="success-icon">
+        <span>✅</span>
+      </div>
+      
+      <h2>You're All Set!</h2>
+      
+      <p class="welcome-text">
+        Welcome, <strong>{{ user_name }}</strong> 🎉
+      </p>
+      
+      <div class="info-box">
+        <div class="info-item">Receive trip invites instantly</div>
+        <div class="info-item">Get payment notifications</div>
+        <div class="info-item">Stay updated on all trips</div>
+      </div>
+      
+      <p class="hint">
+        You're now ready to join and organize amazing trips with your friends!
+      </p>
+      
+      <div class="actions">
+        <a class="btn btn-primary" href="tg://resolve?domain={{ bot_username }}">
+          🤖 Open Bot
+        </a>
+        <button class="btn btn-secondary" onclick="closeWebApp()">
+          Close
+        </button>
+      </div>
+      
+      <div class="auto-close-notice" id="autoCloseMsg">
+        ⏱️ Closing automatically in <span class="countdown" id="cd">3</span> seconds...
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+    
+    try {
+      tg?.ready();
+      tg?.expand();
+      tg?.setBackgroundColor('#d1fae5');
+      tg?.setHeaderColor('#d1fae5');
+    } catch(e) {}
+    
+    function closeWebApp() {
+      try {
+        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+        
+        // Try to close WebApp
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.close();
+          return;
+        }
+        
+        // Fallback: try window.close()
+        if (window.close) {
+          window.close();
+          return;
+        }
+        
+        // Final fallback: show countdown and redirect
+        const autoCloseMsg = document.getElementById('autoCloseMsg');
+        const countdownEl = document.getElementById('cd');
+        
+        if (autoCloseMsg && countdownEl) {
+          autoCloseMsg.style.display = 'block';
+          autoCloseMsg.classList.add('fade-in');
+          
+          let countdown = 3;
+          countdownEl.textContent = String(countdown);
+          
+          const timer = setInterval(() => {
+            countdown -= 1;
+            countdownEl.textContent = String(countdown);
+            
+            if (countdown <= 0) {
+              clearInterval(timer);
+              window.location.href = 'tg://resolve?domain={{ bot_username }}';
+            }
+          }, 1000);
+        }
+      } catch(err) {
+        console.error('Error closing WebApp:', err);
+      }
+    }
+    
+    // Automatically redirect to bot after 1.5 seconds
+    setTimeout(() => {
+      try {
+        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+        
+        // Try to close WebApp first
+        if (window.Telegram?.WebApp?.close) {
+          window.Telegram.WebApp.close();
+          
+          // After a brief delay, redirect to bot
+          setTimeout(() => {
+            window.location.href = 'tg://resolve?domain={{ bot_username }}';
+          }, 500);
+        } else {
+          // Directly redirect if not in Telegram WebApp
+          window.location.href = 'tg://resolve?domain={{ bot_username }}';
+        }
+      } catch(e) {
+        // Fallback to direct redirect
+        window.location.href = 'tg://resolve?domain={{ bot_username }}';
+      }
+    }, 1500);
+  </script>
+</body>
+</html>

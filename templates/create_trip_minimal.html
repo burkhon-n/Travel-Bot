@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Create Trip</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --tg-theme-bg-color: #ffffff;
+      --tg-theme-text-color: #000000;
+      --tg-theme-hint-color: #999999;
+      --tg-theme-link-color: #2481cc;
+      --tg-theme-button-color: #2481cc;
+      --tg-theme-button-text-color: #ffffff;
+      --tg-theme-secondary-bg-color: #f4f4f5;
+      
+      --primary: #2563eb;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--tg-theme-bg-color, var(--bg));
+      color: var(--tg-theme-text-color, var(--text));
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--tg-theme-button-color, var(--primary)) 0%, #1d4ed8 100%);
+      color: var(--tg-theme-button-text-color, #fff);
+      padding: 20px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .header-label {
+      font-size: 13px;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+    
+    .header-title {
+      font-size: 22px;
+      font-weight: 800;
+    }
+    
+    .container {
+      padding: 20px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .form-section {
+      background: var(--tg-theme-secondary-bg-color, var(--surface));
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tg-theme-text-color, var(--text));
+      margin-bottom: 8px;
+    }
+    
+    .required {
+      color: #ef4444;
+    }
+    
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      background: var(--tg-theme-bg-color, #fff);
+      color: var(--tg-theme-text-color, var(--text));
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--tg-theme-button-color, var(--primary));
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .form-hint {
+      font-size: 12px;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      margin-top: 6px;
+    }
+    
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .btn {
+      padding: 14px 20px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn:active {
+      transform: scale(0.96);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--tg-theme-button-color, var(--primary)) 0%, #1d4ed8 100%);
+      color: var(--tg-theme-button-text-color, #fff);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn-secondary {
+      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
+      color: var(--tg-theme-text-color, var(--text));
+      border: 1px solid var(--border);
+    }
+    
+    .alert {
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #7f1d1d;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .success-view {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 42px;
+      animation: successPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    @keyframes successPop {
+      0% {
+        transform: scale(0);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .success-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: var(--tg-theme-text-color, var(--text));
+    }
+    
+    .success-text {
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    
+    .link-box {
+      background: var(--tg-theme-secondary-bg-color, #f8fafc);
+      padding: 16px;
+      border-radius: 12px;
+      margin: 20px 0;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    
+    .link-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .link-item:last-child {
+      border-bottom: none;
+    }
+    
+    .link-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--tg-theme-hint-color, var(--text-muted));
+      margin-bottom: 4px;
+      display: block;
+    }
+    
+    .link-value {
+      font-size: 14px;
+      color: var(--tg-theme-text-color, var(--text));
+      word-break: break-all;
+    }
+    
+    .link-value a {
+      color: var(--tg-theme-link-color, var(--primary));
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-label">Creating trip for:</div>
+    <div class="header-title">{{ group_name }}</div>
+  </div>
+  
+  <div class="container">
+    <div id="formView">
+      <div class="alert alert-error" id="error"></div>
+      
+      <input type="hidden" id="group_id" value="{{ group_id }}" />
+      
+      <div class="form-section">
+        <div class="form-group">
+          <label class="form-label">
+            Trip Name <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input" 
+            id="trip_name" 
+            placeholder="e.g., Samarkand Tour 2025"
+            required 
+          />
+          <div class="form-hint">Give your trip a memorable name</div>
+        </div>
+        
+        <div class="row">
+          <div class="form-group">
+            <label class="form-label">
+              Participant Limit
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              id="participant_limit" 
+              min="1" 
+              placeholder="e.g., 20"
+            />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">
+              Price <span class="required">*</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              id="price" 
+              min="1" 
+              placeholder="e.g., 500000"
+              required
+            />
+            <div class="form-hint">Price in UZS</div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">
+            Payment Card
+          </label>
+          <input 
+            type="text" 
+            class="form-input" 
+            id="card_info" 
+            placeholder="8600 **** ****"
+          />
+        </div>
+      </div>
+      
+      <div class="form-section">
+        <div class="form-group">
+          <label class="form-label">
+            Agreement Text
+          </label>
+          <textarea 
+            class="form-textarea" 
+            id="agreement_text" 
+            placeholder="Terms and conditions for participants..."
+          ></textarea>
+          <div class="form-hint">Optional terms participants will see</div>
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="closeApp()">
+          Cancel
+        </button>
+        <button class="btn btn-primary" id="submitBtn">
+          <span id="btnText">Create Trip</span>
+        </button>
+      </div>
+    </div>
+    
+    <div id="successView" style="display: none;">
+      <div class="success-view">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">Trip Created!</h2>
+        <p class="success-text">Your trip has been successfully created and is ready to go.</p>
+        
+        <div class="link-box" id="linkBox"></div>
+        
+        <button class="btn btn-primary" onclick="closeApp()" style="width: 100%;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Check if running in Telegram WebApp - must be first!
+    (function() {
+      const tg = window.Telegram?.WebApp;
+      
+      // Check for initData - this is the definitive proof we're in Telegram
+      const hasInitData = tg && tg.initData && tg.initData.length > 0;
+      const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
+      
+      if (!hasInitData && !hasTelegramUser) {
+        document.body.innerHTML = `
+          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <div style="max-width: 400px; background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Telegram Required</h1>
+              <p style="color: #64748b; margin-bottom: 24px;">This admin page can only be accessed through Telegram for security.</p>
+              <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
+                <div style="font-weight: 700; margin-bottom: 12px;">📱 How to Access:</div>
+                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
+                  1. Open <strong>Telegram</strong> app<br>
+                  2. Open your bot<br>
+                  3. Use <strong>/admin</strong> command<br>
+                  4. Tap the admin dashboard button
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        throw new Error('Not in Telegram WebApp - initData missing');
+      }
+    })();
+    
+    const tg = window.Telegram.WebApp;
+    
+    try {
+      tg?.ready();
+      tg?.expand();
+      tg?.setHeaderColor('secondary_bg_color');
+      tg?.setBackgroundColor('#f8fafc');
+    } catch(e) {}
+    
+    const $ = id => document.getElementById(id);
+    
+    function closeApp() {
+      try {
+        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
+        tg?.close();
+      } catch(e) {
+        window.close();
+      }
+    }
+    
+    function showError(message) {
+      const errorEl = $('error');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      
+      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
+      
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 5000);
+    }
+    
+    $('submitBtn').onclick = async function() {
+      const btn = this;
+      const btnText = $('btnText');
+      const originalText = btnText.textContent;
+      
+      // Hide any previous errors
+      $('error').style.display = 'none';
+      
+      try {
+        // Validate required fields
+        const tripName = $('trip_name').value.trim();
+        if (!tripName) {
+          throw new Error('Please enter a trip name');
+        }
+        
+        const price = $('price').value.trim();
+        if (!price || parseInt(price) <= 0) {
+          throw new Error('Please enter a valid price');
+        }
+        
+        // Prepare data
+        const data = {
+          name: tripName,
+          group_id: parseInt($('group_id').value),
+          participant_limit: $('participant_limit').value 
+            ? parseInt($('participant_limit').value) 
+            : null,
+          price: parseInt(price),
+          card_info: $('card_info').value.trim() || null,
+          agreement_text: $('agreement_text').value.trim() || null
+        };
+        
+        // Show loading state
+        btn.disabled = true;
+        btnText.innerHTML = '<span class="loading-spinner"></span> Creating...';
+        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
+        
+        // Make API request
+        const response = await fetch('/api/trips/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.detail || 'Failed to create trip');
+        }
+        
+        // Show success view
+        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
+        
+        // Build success content
+        let linksHtml = `
+          <div class="link-item">
+            <span class="link-label">TRIP NAME</span>
+            <div class="link-value">${result.name}</div>
+          </div>
+          <div class="link-item">
+            <span class="link-label">GROUP</span>
+            <div class="link-value">{{ group_name }}</div>
+          </div>
+        `;
+        
+        if (result.participant_invite_link) {
+          linksHtml += `
+            <div class="link-item">
+              <span class="link-label">👥 PARTICIPANT LINK</span>
+              <div class="link-value">
+                <a href="${result.participant_invite_link}">${result.participant_invite_link}</a>
+              </div>
+            </div>
+          `;
+        }
+        
+        if (result.guest_invite_link) {
+          linksHtml += `
+            <div class="link-item">
+              <span class="link-label">👤 GUEST LINK</span>
+              <div class="link-value">
+                <a href="${result.guest_invite_link}">${result.guest_invite_link}</a>
+              </div>
+            </div>
+          `;
+        }
+        
+        $('linkBox').innerHTML = linksHtml;
+        
+        // Switch views
+        $('formView').style.display = 'none';
+        $('successView').style.display = 'block';
+        
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+          closeApp();
+        }, 5000);
+        
+      } catch(err) {
+        showError(err.message || 'An unexpected error occurred');
+        btn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    };
+  </script>
+</body>
+</html>
