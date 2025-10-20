@@ -9,3 +9,4 @@ aiohttp
 jinja2
 pydantic
 openpyxl
+mangum

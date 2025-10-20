@@ -5,6 +5,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import app
+from mangum import Mangum
 
-# Vercel serverless handler
-handler = app
+# Vercel serverless handler using Mangum adapter
+# Mangum converts ASGI (FastAPI) to AWS Lambda/Vercel format
+handler = Mangum(app, lifespan="off")

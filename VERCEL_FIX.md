@@ -11,12 +11,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from main import app
+from mangum import Mangum
 
-# Vercel serverless handler
-handler = app
+# Vercel serverless handler using Mangum adapter
+# Mangum converts ASGI (FastAPI) to AWS Lambda/Vercel format
+handler = Mangum(app, lifespan="off")
 ```
 
-This is the standard Vercel Python serverless function structure.
+**Key Fix:** Using `Mangum` adapter to convert FastAPI (ASGI) to serverless handler format.
+This fixes the `TypeError: issubclass() arg 1 must be a class` error.
 
 ### 2. Updated `vercel.json`
 ```json
@@ -46,15 +49,30 @@ python-3.9
 
 Specifies Python version for Vercel.
 
-### 4. Created `.vercelignore`
+### 4. Added `mangum` to `requirements.txt`
+```
+mangum
+```
+
+Mangum is an adapter that allows ASGI applications (FastAPI, Starlette) to run on AWS Lambda and Vercel serverless functions.
+
+### 5. Created `.vercelignore`
 Excludes unnecessary files from deployment to reduce build size.
 
-### 5. Updated `main.py`
-Added Vercel handler at the end:
+### 6. Updated `main.py`
+Added serverless detection and conditional lifecycle events:
 ```python
-# Vercel serverless function handler
-handler = app
+# Check if running on Vercel (serverless environment)
+IS_VERCEL = os.getenv("VERCEL") == "1" or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
+
+# Only run startup/shutdown events when NOT on serverless
+if not IS_VERCEL:
+    @app.on_event('startup')
+    async def startup():
+        await initialize_bot()
 ```
+
+**Why:** Serverless functions don't support lifecycle events. They're stateless and cold-start on each invocation.
 
 ## Deployment Steps
 
