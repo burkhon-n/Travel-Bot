@@ -15,15 +15,11 @@ import requests
 import logging
 from sqlalchemy.exc import OperationalError
 import json
-import os
 from utils.logging_config import setup_logging
 
 
 setup_logging()
 app = FastAPI()
-
-# Check if running on Vercel (serverless environment)
-IS_VERCEL = os.getenv("VERCEL") == "1" or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
 
 # Setup Jinja2 templates for public pages
 BASE_DIR = Path(__file__).resolve().parent
@@ -155,22 +151,19 @@ async def root():
 	}
 
 
-# Only run startup/shutdown events when NOT on serverless (Vercel)
-# Serverless functions are stateless and don't support lifecycle events
-if not IS_VERCEL:
-	@app.on_event('startup')
-	async def startup():
-		"""Run initialization on application startup."""
-		await initialize_bot()
+@app.on_event('startup')
+async def startup():
+	"""Run initialization on application startup."""
+	await initialize_bot()
 
 
-	@app.on_event('shutdown')
-	async def shutdown():
-		"""Cleanup: try to remove webhook on shutdown."""
-		if Config.BOT_TOKEN:
-			url = f"https://api.telegram.org/bot{Config.BOT_TOKEN}/deleteWebhook"
-			try:
-				resp = requests.post(url, timeout=5)
-				logging.info("Deleted webhook response: %s", resp.text)
-			except Exception:
-				logging.exception("Failed to delete webhook on shutdown")
+@app.on_event('shutdown')
+async def shutdown():
+	"""Cleanup: try to remove webhook on shutdown."""
+	if Config.BOT_TOKEN:
+		url = f"https://api.telegram.org/bot{Config.BOT_TOKEN}/deleteWebhook"
+		try:
+			resp = requests.post(url, timeout=5)
+			logging.info("Deleted webhook response: %s", resp.text)
+		except Exception:
+			logging.exception("Failed to delete webhook on shutdown")
