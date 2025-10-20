@@ -167,3 +167,8 @@ async def shutdown():
 			logging.info("Deleted webhook response: %s", resp.text)
 		except Exception:
 			logging.exception("Failed to delete webhook on shutdown")
+
+
+# Vercel serverless function handler
+# This is required for Vercel deployment
+handler = app
