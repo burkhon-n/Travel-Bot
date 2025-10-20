@@ -20,6 +20,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
+@router.get("/home", response_class=HTMLResponse)
+async def home_page(request: Request):
+    """Serve the public home page.
+    
+    This page is publicly accessible and provides information about Travel Bot.
+    Required for Google Cloud Console app publication.
+    """
+    logging.info("webapp.home render")
+    return templates.TemplateResponse("home.html", {"request": request})
+
+
+@router.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+    """Serve the privacy policy page.
+    
+    This page is publicly accessible and details our privacy practices.
+    Required for Google Cloud Console app publication.
+    """
+    logging.info("webapp.privacy render")
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+
 @router.get("/register", response_class=HTMLResponse)
 async def register_webapp(request: Request):
     """Serve the Telegram Web App registration page.

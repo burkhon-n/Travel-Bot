@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
 from models import User, TripMember, Trip
 from database import Base, engine
 from config import Config
@@ -17,6 +20,10 @@ from utils.logging_config import setup_logging
 
 setup_logging()
 app = FastAPI()
+
+# Setup Jinja2 templates for public pages
+BASE_DIR = Path(__file__).resolve().parent
+templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 # include routers so endpoints are available
 app.include_router(webhook_router)
@@ -91,6 +98,28 @@ async def initialize_bot():
 		results["commands"] = "skipped: BOT_TOKEN or URL not configured"
 	
 	return results
+
+
+@app.get("/home", response_class=HTMLResponse)
+async def home_page(request: Request):
+	"""Serve the public home page.
+	
+	Publicly accessible page providing information about Travel Bot.
+	Required for Google Cloud Console app publication.
+	"""
+	logging.info("public.home render")
+	return templates.TemplateResponse("home.html", {"request": request})
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+	"""Serve the privacy policy page.
+	
+	Publicly accessible page detailing privacy practices.
+	Required for Google Cloud Console app publication.
+	"""
+	logging.info("public.privacy render")
+	return templates.TemplateResponse("privacy.html", {"request": request})
 
 
 @app.get("/")
