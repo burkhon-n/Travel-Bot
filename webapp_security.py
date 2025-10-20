@@ -151,8 +151,9 @@ def require_telegram_webapp(request: Request, bot_username: Optional[str] = None
     2. User authentication via Telegram ID embedded in OAuth flow
     3. Rate limiting and other security measures
     
-    This function is currently configured to be permissive for WebApp routes.
-    Set STRICT_TELEGRAM_CHECK=true in .env to enable strict validation.
+    This function is configured to be strict by default in production.
+    Set STRICT_TELEGRAM_CHECK=false in .env to disable validation (not recommended).
+    Set BYPASS_TELEGRAM_CHECK=true in .env for local development.
     
     Args:
         request: The FastAPI Request object
@@ -166,8 +167,8 @@ def require_telegram_webapp(request: Request, bot_username: Optional[str] = None
         logging.debug("Telegram WebApp check bypassed (development mode)")
         return None
     
-    # Check if strict mode is enabled (default: false for better UX)
-    strict_mode = os.getenv("STRICT_TELEGRAM_CHECK", "false").lower() in ("true", "1", "yes")
+    # Check if strict mode is enabled (default: true for production security)
+    strict_mode = os.getenv("STRICT_TELEGRAM_CHECK", "true").lower() in ("true", "1", "yes")
     
     if strict_mode and not is_telegram_webapp_request(request):
         logging.warning(
