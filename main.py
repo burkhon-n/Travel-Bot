@@ -26,6 +26,32 @@ app.include_router(trips_router)
 app.include_router(admin_router)
 
 
+@app.get("/")
+async def root():
+	"""Root endpoint - API information."""
+	return {
+		"name": "Travel Bot API",
+		"version": "1.3.0",
+		"description": "Telegram bot for managing group travel trips with payment tracking",
+		"features": [
+			"Trip management with pricing",
+			"Google OAuth authentication",
+			"Payment receipt uploads",
+			"Admin dashboard",
+			"Excel export for trip members",
+			"Real-time statistics"
+		],
+		"endpoints": {
+			"webhook": "/webhook/{token}",
+			"auth": "/auth/google",
+			"admin": "/admin/dashboard",
+			"trips": "/trips",
+			"docs": "/docs"
+		},
+		"documentation": "/docs"
+	}
+
+
 @app.on_event('startup')
 async def startup():
 	"""Create DB tables and register the Telegram webhook (if configured)."""
