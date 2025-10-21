@@ -5,6 +5,7 @@ from pathlib import Path
 import requests
 import logging
 import asyncio
+import threading
 
 from config import Config
 from database import get_db
@@ -153,26 +154,29 @@ async def auth_callback(request: Request):
         db.commit()
         db.refresh(user)
         
-        # Send onboarding instructions to user via bot
+        # Send onboarding instructions to user via bot (in background thread)
         from bot import bot
         
-        def send_onboarding_sync():
-            """Send onboarding messages to newly registered user."""
+        def send_onboarding_background():
+            """Send onboarding messages to newly registered user in a background thread."""
             try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+                import time
+                # Small delay to ensure event loop is ready
+                time.sleep(0.5)
+                
+                # Success notification
                 try:
-                    # Success notification
-                    loop.run_until_complete(
-                        bot.send_message(
-                            tg_id,
-                            "🎉 <b>Registration Successful!</b>\n\n"
-                            "Welcome to Travel Bot! You're all set to start exploring trips.",
-                            parse_mode='HTML'
-                        )
+                    bot.send_message(
+                        tg_id,
+                        "🎉 <b>Registration Successful!</b>\n\n"
+                        "Welcome to Travel Bot! You're all set to start exploring trips.",
+                        parse_mode='HTML'
                     )
+                except Exception as e:
+                    logging.warning(f"Failed to send success message to user {tg_id}: {e}")
 
-                    # Detailed usage instructions
+                # Detailed usage instructions
+                try:
                     help_text = (
                         "📖 <b>Quick Start Guide</b>\n\n"
                         "<b>Available Commands:</b>\n"
@@ -189,19 +193,18 @@ async def auth_callback(request: Request):
                         "5️⃣ Get your confirmed seat!\n\n"
                         "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
                     )
-                    loop.run_until_complete(
-                        bot.send_message(tg_id, help_text, parse_mode='HTML')
-                    )
-                finally:
-                    loop.close()
+                    bot.send_message(tg_id, help_text, parse_mode='HTML')
+                except Exception as e:
+                    logging.warning(f"Failed to send instructions to user {tg_id}: {e}")
             except Exception as e:
-                logging.error(f"Error sending onboarding messages to user {tg_id}: {e}", exc_info=True)
+                logging.error(f"Error in onboarding background task for user {tg_id}: {e}", exc_info=True)
         
-        # Send onboarding synchronously before returning response
+        # Send onboarding in background thread (non-blocking)
         try:
-            send_onboarding_sync()
+            onboarding_thread = threading.Thread(target=send_onboarding_background, daemon=True)
+            onboarding_thread.start()
         except Exception as e:
-            logging.error(f"Failed to queue onboarding for user {tg_id}: {e}")
+            logging.error(f"Failed to start onboarding thread for user {tg_id}: {e}")
             pass
         
         # Build user display name
