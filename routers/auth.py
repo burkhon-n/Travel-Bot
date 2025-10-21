@@ -156,12 +156,12 @@ async def auth_callback(request: Request):
         # Send onboarding messages to user
         from bot import bot
         try:
-            asyncio.create_task(bot.send_message(
+            await bot.send_message(
                 tg_id,
                 "🎉 <b>Registration Successful!</b>\n\n"
                 "Welcome to Travel Bot! You're all set to start exploring trips.",
                 parse_mode='HTML'
-            ))
+            )
         except Exception as e:
             logging.warning(f"Failed to queue success message to user {tg_id}: {e}")
         
@@ -182,7 +182,7 @@ async def auth_callback(request: Request):
                 "5️⃣ Get your confirmed seat!\n\n"
                 "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
             )
-            asyncio.create_task(bot.send_message(tg_id, help_text, parse_mode='HTML'))
+            await bot.send_message(tg_id, help_text, parse_mode='HTML')
         except Exception as e:
             logging.warning(f"Failed to queue instructions to user {tg_id}: {e}")
         
