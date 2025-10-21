@@ -3,19 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="color-scheme" content="light">
   <title>{{ trip.name }}</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --tg-theme-bg-color: #ffffff;
-      --tg-theme-text-color: #000000;
-      --tg-theme-hint-color: #999999;
-      --tg-theme-link-color: #2481cc;
-      --tg-theme-button-color: #2481cc;
-      --tg-theme-button-text-color: #ffffff;
-      --tg-theme-secondary-bg-color: #f4f4f5;
+      /* Force light theme regardless of Telegram or OS theme */
+      --tg-theme-bg-color: #ffffff !important;
+      --tg-theme-text-color: #0f172a !important;
+      --tg-theme-hint-color: #64748b !important;
+      --tg-theme-link-color: #2563eb !important;
+      --tg-theme-button-color: #2563eb !important;
+      --tg-theme-button-text-color: #ffffff !important;
+      --tg-theme-secondary-bg-color: #f1f5f9 !important;
       
       --primary: #2563eb;
       --success: #10b981;
@@ -36,6 +38,7 @@
       padding: 0;
       margin: 0;
       -webkit-font-smoothing: antialiased;
+      color-scheme: light;
     }
     
     .header {
@@ -313,6 +316,10 @@
       background: #f3f4f6;
       color: #374151;
     }
+    /* Utility text colors for dynamic status */
+    .text-danger { color: var(--danger); }
+    .text-warning { color: var(--warning); }
+    .text-success { color: var(--success); }
   </style>
 </head>
 <body>
@@ -363,7 +370,8 @@
       <div class="info-row">
         <span class="info-label">🪑 Seats Available</span>
         <span class="info-value">
-          <strong style="color: {% if stats.seats_available == 0 %}var(--danger){% elif stats.seats_available is not none and stats.seats_available < 10 %}var(--warning){% else %}var(--success){% endif %}">
+          {% set _seats_class = 'text-danger' if stats.seats_available == 0 else ('text-warning' if stats.seats_available is not none and stats.seats_available < 10 else 'text-success') %}
+          <strong class="{{ _seats_class }}">
             {% if stats.seats_available is not none %}{{ stats.seats_available }} of {{ trip.participant_limit }}{% else %}Unlimited{% endif %}
           </strong>
         </span>
@@ -500,7 +508,7 @@
     try {
       tg?.ready();
       tg?.expand();
-      tg?.setHeaderColor('secondary_bg_color');
+  tg?.setHeaderColor('#f8fafc');
       tg?.setBackgroundColor('#f8fafc');
     } catch(e) {}
     

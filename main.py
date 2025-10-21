@@ -19,7 +19,8 @@ from utils.logging_config import setup_logging
 
 
 setup_logging()
-app = FastAPI()
+# Disable public API docs endpoints for security (/docs, /redoc, /openapi.json)
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 # Setup Jinja2 templates for public pages
 BASE_DIR = Path(__file__).resolve().parent
@@ -144,10 +145,8 @@ async def root():
 			"webhook": "/webhook/{token}",
 			"auth": "/auth/google",
 			"admin": "/admin/dashboard",
-			"trips": "/trips",
-			"docs": "/docs"
-		},
-		"documentation": "/docs"
+			"trips": "/trips"
+		}
 	}
 
 
