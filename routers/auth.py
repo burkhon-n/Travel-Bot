@@ -4,8 +4,6 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import requests
 import logging
-import asyncio
-import threading
 
 from config import Config
 from database import get_db
@@ -154,58 +152,38 @@ async def auth_callback(request: Request):
         db.commit()
         db.refresh(user)
         
-        # Send onboarding instructions to user via bot (in background thread)
+        # Send onboarding messages to user
         from bot import bot
-        
-        def send_onboarding_background():
-            """Send onboarding messages to newly registered user in a background thread."""
-            try:
-                import time
-                # Small delay to ensure event loop is ready
-                time.sleep(0.5)
-                
-                # Success notification
-                try:
-                    bot.send_message(
-                        tg_id,
-                        "🎉 <b>Registration Successful!</b>\n\n"
-                        "Welcome to Travel Bot! You're all set to start exploring trips.",
-                        parse_mode='HTML'
-                    )
-                except Exception as e:
-                    logging.warning(f"Failed to send success message to user {tg_id}: {e}")
-
-                # Detailed usage instructions
-                try:
-                    help_text = (
-                        "📖 <b>Quick Start Guide</b>\n\n"
-                        "<b>Available Commands:</b>\n"
-                        "🎫 <b>/trips</b> – Browse and register for trips\n"
-                        "💳 <b>/mystatus</b> – Check your payment status\n"
-                        "📊 <b>/stats</b> – View trip statistics\n"
-                        "🧭 <b>/menu</b> – Main menu with all options\n"
-                        "❓ <b>/help</b> – Full usage guide\n\n"
-                        "<b>How it works:</b>\n"
-                        "1️⃣ Find a trip with /trips\n"
-                        "2️⃣ Register and confirm the agreement\n"
-                        "3️⃣ Upload a 50% payment receipt\n"
-                        "4️⃣ Upload final payment receipt to complete\n"
-                        "5️⃣ Get your confirmed seat!\n\n"
-                        "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
-                    )
-                    bot.send_message(tg_id, help_text, parse_mode='HTML')
-                except Exception as e:
-                    logging.warning(f"Failed to send instructions to user {tg_id}: {e}")
-            except Exception as e:
-                logging.error(f"Error in onboarding background task for user {tg_id}: {e}", exc_info=True)
-        
-        # Send onboarding in background thread (non-blocking)
         try:
-            onboarding_thread = threading.Thread(target=send_onboarding_background, daemon=True)
-            onboarding_thread.start()
+            bot.send_message(
+                tg_id,
+                "🎉 <b>Registration Successful!</b>\n\n"
+                "Welcome to Travel Bot! You're all set to start exploring trips.",
+                parse_mode='HTML'
+            )
         except Exception as e:
-            logging.error(f"Failed to start onboarding thread for user {tg_id}: {e}")
-            pass
+            logging.warning(f"Failed to send success message to user {tg_id}: {e}")
+        
+        try:
+            help_text = (
+                "📖 <b>Quick Start Guide</b>\n\n"
+                "<b>Available Commands:</b>\n"
+                "🎫 <b>/trips</b> – Browse and register for trips\n"
+                "💳 <b>/mystatus</b> – Check your payment status\n"
+                "📊 <b>/stats</b> – View trip statistics\n"
+                "🧭 <b>/menu</b> – Main menu with all options\n"
+                "❓ <b>/help</b> – Full usage guide\n\n"
+                "<b>How it works:</b>\n"
+                "1️⃣ Find a trip with /trips\n"
+                "2️⃣ Register and confirm the agreement\n"
+                "3️⃣ Upload a 50% payment receipt\n"
+                "4️⃣ Upload final payment receipt to complete\n"
+                "5️⃣ Get your confirmed seat!\n\n"
+                "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
+            )
+            bot.send_message(tg_id, help_text, parse_mode='HTML')
+        except Exception as e:
+            logging.warning(f"Failed to send instructions to user {tg_id}: {e}")
         
         # Build user display name
         user_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or email.split('@')[0]
