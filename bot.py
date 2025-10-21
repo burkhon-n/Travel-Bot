@@ -159,7 +159,13 @@ async def start_handler(message: types.Message):
 
     If the user already exists, send a welcome back message. Otherwise,
     create a new User record and greet them.
+    
+    Only works in private chats.
     """
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
     tg_id = message.from_user.id
     logging.info("cmd.start from=%s chat=%s type=%s", tg_id, message.chat.id, message.chat.type)
 
@@ -530,8 +536,12 @@ async def check_admin_status_callback(call: types.CallbackQuery):
 
 @bot.message_handler(commands=['trips'])
 async def show_trips_handler(message: types.Message):
-    """Show all active trips to registered users."""
+    """Show all active trips to registered users. Only works in private chats."""
     from models.Trip import Trip, TripStatus
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
     
     tg_id = message.from_user.id
     db_gen = get_db()
@@ -600,9 +610,13 @@ async def show_trips_handler(message: types.Message):
 
 @bot.message_handler(func=lambda message: message.text and message.text.startswith('🎫 '))
 async def trip_selection_handler(message: types.Message):
-    """Handle trip selection from keyboard."""
+    """Handle trip selection from keyboard. Only works in private chats."""
     from models.Trip import Trip, TripStatus
     from models.TripMember import TripMember, PaymentStatus
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
     
     trip_name = message.text.replace('🎫 ', '').strip()
     tg_id = message.from_user.id
@@ -860,9 +874,14 @@ async def confirm_trip_registration(call: types.CallbackQuery):
 
 @bot.message_handler(commands=['mystatus'])
 async def my_status_handler(message: types.Message):
-    """Show the user's latest registration and payment status."""
+    """Show the user's latest registration and payment status. Only works in private chats."""
     from models.TripMember import TripMember, PaymentStatus
     from models.Trip import Trip
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
     tg_id = message.from_user.id
     db_gen = get_db()
     db: Session = next(db_gen)
@@ -910,9 +929,13 @@ async def cancel_registration_handler(call: types.CallbackQuery):
 
 @bot.message_handler(content_types=['photo', 'document'])
 async def payment_receipt_handler(message: types.Message):
-    """Handle payment receipt uploads."""
+    """Handle payment receipt uploads (only in private chats)."""
     from models.TripMember import TripMember, PaymentStatus
     from models.Trip import Trip
+    
+    # Ignore photos/files sent in groups - only process in private chats
+    if message.chat.type in ('group', 'supergroup'):
+        return
     
     tg_id = message.from_user.id
     db_gen = get_db()
@@ -1426,7 +1449,12 @@ async def stats_command_handler(message: types.Message):
 
 @bot.message_handler(commands=['menu'])
 async def menu_handler(message: types.Message):
-    """Show a compact main menu for quick navigation."""
+    """Show a compact main menu for quick navigation. Only works in private chats."""
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
     kb = types.InlineKeyboardMarkup()
     kb.row(
         types.InlineKeyboardButton(text="🗺 Browse Trips", callback_data="menu:trips"),
@@ -1479,6 +1507,12 @@ async def menu_callback(call: types.CallbackQuery):
 
 @bot.message_handler(commands=['help'])
 async def help_handler(message: types.Message):
+    """Show help guide. Only works in private chats."""
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
     text = (
         "❓ <b>Travel Bot - Quick Guide</b>\n\n"
         "<b>🚀 Getting Started</b>\n"
@@ -1508,7 +1542,12 @@ async def help_handler(message: types.Message):
 
 @bot.message_handler(commands=['admin'])
 async def admin_handler(message: types.Message):
-    """Open Admin dashboard for configured admins only."""
+    """Open Admin dashboard for configured admins only. Only works in private chats."""
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
     user_id = message.from_user.id
     if user_id not in set(Config.ADMINS or []):
         await bot.send_message(message.chat.id, "❌ You are not an admin.")
