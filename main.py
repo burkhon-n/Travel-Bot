@@ -155,15 +155,3 @@ async def root():
 async def startup():
 	"""Run initialization on application startup."""
 	await initialize_bot()
-
-
-@app.on_event('shutdown')
-async def shutdown():
-	"""Cleanup: try to remove webhook on shutdown."""
-	if Config.BOT_TOKEN:
-		url = f"https://api.telegram.org/bot{Config.BOT_TOKEN}/deleteWebhook"
-		try:
-			resp = requests.post(url, timeout=5)
-			logging.info("Deleted webhook response: %s", resp.text)
-		except Exception:
-			logging.exception("Failed to delete webhook on shutdown")
