@@ -285,11 +285,11 @@
         </div>
         <div class="stat-item">
           <div class="stat-label">Half Paid</div>
-          <div class="stat-value">{{ t.half }}</div>
+          <div class="stat-value">{{ t.half_paid }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-label">Full Paid</div>
-          <div class="stat-value">{{ t.full }}</div>
+          <div class="stat-value">{{ t.full_paid }}</div>
         </div>
         <div class="stat-item">
           <div class="stat-label">Total Paid</div>
@@ -299,13 +299,13 @@
       
       {% if t.participant_limit %}
       <div class="seats-info">
-        <strong>{{ t.participant_limit - t.paid }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
+        <strong>{{ t.seats if t.seats is not none else (t.participant_limit - t.paid) }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
       </div>
       {% endif %}
       
       <div class="action-grid" style="margin-top: 12px;">
         <button class="btn btn-success js-trip-status" data-trip-id="{{ t.id }}" data-status="active">✓ Activate</button>
-        <button class="btn btn-warning js-trip-status" data-trip-id="{{ t.id }}" data-status="closed">⊗ Close</button>
+        <button class="btn btn-primary" onclick="window.location.href='/admin/trip/{{ t.id }}/edit'">✏️ Edit</button>
         <button class="btn btn-danger js-trip-status" data-trip-id="{{ t.id }}" data-status="cancelled">✕ Cancel</button>
         <button class="btn btn-primary js-regen" data-trip-id="{{ t.id }}">↻ Links</button>
       </div>

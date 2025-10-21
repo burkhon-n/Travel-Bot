@@ -333,13 +333,45 @@
         <span class="info-value"><span class="badge-status {{ trip.status }}">{{ trip.status }}</span></span>
       </div>
       <div class="info-row">
-        <span class="info-label">Price</span>
-        <span class="info-value"><strong>{{ "{:,}".format(trip.price) }} UZS</strong></span>
+        <span class="info-label">💰 Price</span>
+        <span class="info-value"><strong>{{ "{:,}".format(trip.price if trip.price is not none else 0) }} UZS</strong></span>
       </div>
       <div class="info-row">
         <span class="info-label">Participant Limit</span>
         <span class="info-value">{% if trip.participant_limit is not none %}{{ trip.participant_limit }}{% else %}Unlimited{% endif %}</span>
       </div>
+    </div>
+    
+    <!-- Statistics Card -->
+    <div class="info-card" style="margin-top: 12px;">
+      <div class="info-row">
+        <span class="info-label">📝 Registered</span>
+        <span class="info-value"><strong>{{ stats.registered }}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🟡 Half Paid</span>
+        <span class="info-value"><strong>{{ stats.half_paid }}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">✅ Full Paid</span>
+        <span class="info-value"><strong>{{ stats.full_paid }}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">💵 Total Paid</span>
+        <span class="info-value"><strong style="color: var(--success);">{{ stats.total_paid }}</strong></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🪑 Seats Available</span>
+        <span class="info-value">
+          <strong style="color: {% if stats.seats_available == 0 %}var(--danger){% elif stats.seats_available is not none and stats.seats_available < 10 %}var(--warning){% else %}var(--success){% endif %}">
+            {% if stats.seats_available is not none %}{{ stats.seats_available }} of {{ trip.participant_limit }}{% else %}Unlimited{% endif %}
+          </strong>
+        </span>
+      </div>
+    </div>
+    
+    <!-- Links Card -->
+    <div class="info-card" style="margin-top: 12px;">
       <div class="info-row">
         <span class="info-label">👥 Participant Link</span>
         <span class="info-value">
@@ -367,8 +399,8 @@
       <button class="btn btn-success js-trip-status" data-trip-id="{{ trip.id }}" data-status="active">
         ✓ Activate
       </button>
-      <button class="btn btn-warning js-trip-status" data-trip-id="{{ trip.id }}" data-status="closed">
-        ⊗ Close
+      <button class="btn btn-primary" onclick="openEditPage()">
+        ✏️ Edit
       </button>
       <button class="btn btn-danger js-trip-status" data-trip-id="{{ trip.id }}" data-status="cancelled">
         ✕ Cancel
@@ -420,9 +452,6 @@
           </button>
           <button class="btn btn-secondary btn-sm js-member-status" data-member-id="{{ m.id }}" data-status="full_paid">
             Full
-          </button>
-          <button class="btn btn-danger btn-sm js-kick" data-member-id="{{ m.id }}">
-            Kick
           </button>
         </div>
       </div>
@@ -532,30 +561,38 @@
         
         if (t.matches('.js-member-status')) {
           console.log('Updating member status...');
-          await postJSON(`/admin/api/member/${t.dataset.memberId}/status`, {
-            status: t.dataset.status
-          });
-          toast('Payment status updated', 'success');
-          setTimeout(() => location.reload(), 500);
-        }
-        
-        if (t.matches('.js-kick')) {
-          console.log('Kicking member...');
+          
+          // Get status text for confirmation
+          const statusMap = {
+            'not_paid': 'Not Paid',
+            'half_paid': 'Half Paid (50%)',
+            'full_paid': 'Full Paid (100%)'
+          };
+          const newStatus = t.dataset.status;
+          const statusText = statusMap[newStatus] || newStatus;
+          
+          // Get member name from the card
+          const memberCard = t.closest('.member-card');
+          const memberName = memberCard?.querySelector('.member-user')?.textContent || 'this member';
+          
           // Use Telegram's confirmation dialog
-          const shouldKick = await new Promise((resolve) => {
+          const shouldUpdate = await new Promise((resolve) => {
             window.Telegram?.WebApp?.showConfirm(
-              'Are you sure you want to kick this member?',
+              `Change ${memberName}'s payment status to "${statusText}"?\n\n⚠️ This will update their access and notifications.`,
               (confirmed) => resolve(confirmed)
             );
           });
           
-          if (shouldKick) {
-            await postJSON(`/admin/api/member/${t.dataset.memberId}/kick`, {});
-            toast('Member kicked successfully', 'success');
-            setTimeout(() => location.reload(), 500);
-          } else {
-            t.disabled = originalDisabled;
+          if (!shouldUpdate) {
+            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
+            return;
           }
+          
+          await postJSON(`/admin/api/member/${t.dataset.memberId}/status`, {
+            status: newStatus
+          });
+          toast('Payment status updated', 'success');
+          setTimeout(() => location.reload(), 500);
         }
       } catch(err) {
         console.error('Error:', err);
@@ -563,6 +600,12 @@
         t.disabled = originalDisabled;
       }
     });
+    
+    // Open edit page
+    function openEditPage() {
+      const editUrl = `/admin/trip/{{ trip.id }}/edit`;
+      window.location.href = editUrl;
+    }
     
     // Download Excel function
     async function downloadExcel() {
@@ -577,7 +620,7 @@
           return;
         }
         
-        const response = await fetch(`/admin/api/trip/{{ trip.id }}/export-excel`, {
+        const response = await fetch(`/admin/api/trip/{{ trip.id }}/export-excel?send_to_chat=true`, {
           method: 'GET',
           headers: {
             'X-Telegram-Id': tgUserId.toString()
@@ -608,7 +651,7 @@
         window.URL.revokeObjectURL(url);
         
         window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-        toast('Excel file downloaded successfully', 'success');
+        toast('Excel file downloaded and sent to chat!', 'success');
       } catch (err) {
         console.error('Error downloading Excel:', err);
         toast('Failed to download Excel file', 'error');

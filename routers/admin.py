@@ -71,6 +71,7 @@ async def admin_home(request: Request):
                 "group_id": t.group_id,
                 "status": t.status.value if hasattr(t.status, 'value') else str(t.status),
                 "participant_limit": t.participant_limit,
+                "price": t.price if t.price is not None else 0,
                 "registered": total,
                 "half_paid": half,
                 "full_paid": full,
@@ -113,7 +114,22 @@ async def admin_trip_detail(request: Request, trip_id: int):
 
         members = db.query(TripMember).filter(TripMember.trip_id == trip.id).order_by(TripMember.joined_at.desc()).all()
         member_rows = []
+        
+        # Calculate statistics
+        total_registered = len(members)
+        half_paid_count = 0
+        full_paid_count = 0
+        not_paid_count = 0
+        
         for m in members:
+            # Count payment statuses
+            if m.payment_status == PaymentStatus.half_paid:
+                half_paid_count += 1
+            elif m.payment_status == PaymentStatus.full_paid:
+                full_paid_count += 1
+            elif m.payment_status == PaymentStatus.not_paid:
+                not_paid_count += 1
+            
             # Fetch user information
             from models.User import User
             user = db.query(User).filter(User.id == m.user_id).first()
@@ -139,6 +155,14 @@ async def admin_trip_detail(request: Request, trip_id: int):
                 "receipt": m.payment_receipt_file_id,
                 "joined_at": m.joined_at,
             })
+        
+        # Calculate total paid (half + full)
+        total_paid = half_paid_count + full_paid_count
+        
+        # Calculate available seats
+        seats_available = None
+        if trip.participant_limit is not None:
+            seats_available = max(trip.participant_limit - total_paid, 0)
 
         logging.info("admin.trip detail render trip_id=%s members=%s", trip.id, len(member_rows))
         return templates.TemplateResponse(
@@ -148,6 +172,14 @@ async def admin_trip_detail(request: Request, trip_id: int):
                 "admins": Config.ADMINS or [],
                 "trip": trip,
                 "members": member_rows,
+                "stats": {
+                    "registered": total_registered,
+                    "half_paid": half_paid_count,
+                    "full_paid": full_paid_count,
+                    "not_paid": not_paid_count,
+                    "total_paid": total_paid,
+                    "seats_available": seats_available,
+                }
             }
         )
     finally:
@@ -238,6 +270,10 @@ async def regenerate_invite_links(request: Request, trip_id: int):
 @router.post("/api/member/{member_id}/status")
 async def update_member_status(request: Request, member_id: int):
     _require_admin(request)
+    from bot import bot as tg_bot
+    from models.User import User
+    from email_service import get_email_service
+    
     data = await request.json()
     new_status = (data.get("status") or "").lower()
     if new_status not in ("not_paid", "half_paid", "full_paid"):
@@ -249,9 +285,153 @@ async def update_member_status(request: Request, member_id: int):
         member = db.query(TripMember).filter(TripMember.id == member_id).first()
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
-        member.payment_status = PaymentStatus[new_status]
+        
+        # Get user and trip info for notification
+        user = db.query(User).filter(User.id == member.user_id).first()
+        trip = db.query(Trip).filter(Trip.id == member.trip_id).first()
+        
+        # Store old status for comparison
+        old_status = member.payment_status
+        
+        # Update status
+        new_status_obj = PaymentStatus[new_status]
+        member.payment_status = new_status_obj
         db.commit()
-        logging.info("admin.member status updated member_id=%s status=%s", member_id, new_status)
+        
+        # Handle auto-kick when status changes to "Not Paid"
+        if new_status_obj == PaymentStatus.not_paid and user and trip and trip.group_id:
+            try:
+                # Try to kick from group
+                await tg_bot.ban_chat_member(trip.group_id, user.telegram_id)
+                await tg_bot.unban_chat_member(trip.group_id, user.telegram_id, only_if_banned=True)
+                logging.info("admin.member auto-kicked member_id=%s tg_id=%s group_id=%s", 
+                           member_id, user.telegram_id, trip.group_id)
+            except Exception as e:
+                logging.error(f"Failed to kick user {user.telegram_id} from group {trip.group_id}: {e}")
+                # Continue even if kick fails (user might not be in group)
+        
+        # Send notification to user
+        if user and trip:
+            try:
+                status_emoji = {
+                    PaymentStatus.not_paid: '❌',
+                    PaymentStatus.half_paid: '🟡',
+                    PaymentStatus.full_paid: '✅'
+                }
+                status_text = {
+                    PaymentStatus.not_paid: 'Not Paid',
+                    PaymentStatus.half_paid: 'Half Paid (50%)',
+                    PaymentStatus.full_paid: 'Full Paid (100%)'
+                }
+                
+                emoji = status_emoji.get(new_status_obj, '•')
+                text = status_text.get(new_status_obj, new_status)
+                
+                # Build notification message
+                msg = f"{emoji} <b>Payment Status Updated</b>\n\n"
+                msg += f"🎫 <b>Trip:</b> {trip.name}\n"
+                msg += f"💳 <b>New Status:</b> {text}\n\n"
+                
+                if new_status_obj == PaymentStatus.not_paid:
+                    msg += (
+                        "<b>⚠️ Your payment status has been reset to Not Paid.</b>\n\n"
+                        "<b>Important:</b>\n"
+                        "• Your seat is NO LONGER reserved\n"
+                        "• You have been removed from the trip group\n"
+                        "• Please make payment as soon as possible\n"
+                        "• Send your receipt to secure your spot again\n\n"
+                    )
+                    if trip.card_info:
+                        msg += f"💳 <b>Payment Info:</b>\n{trip.card_info}\n\n"
+                    half_price = trip.price // 2
+                    msg += f"💵 <b>Minimum Payment (50%):</b> {half_price:,} UZS\n"
+                    msg += f"💰 <b>Full Price:</b> {trip.price:,} UZS"
+                    
+                elif new_status_obj == PaymentStatus.half_paid:
+                    msg += (
+                        "<b>🎉 Your seat is now RESERVED!</b>\n\n"
+                        "<b>What's Next:</b>\n"
+                        "• You're confirmed for the trip!\n"
+                        "• Complete the remaining 50% before departure\n"
+                    )
+                    
+                    # Send group link if status changed from not_paid
+                    if old_status == PaymentStatus.not_paid and trip.participant_invite_link:
+                        msg += f"\n🔗 <b>Join the Trip Group:</b>\n<a href='{trip.participant_invite_link}'>👉 Click here to join</a>\n\n"
+                    elif trip.participant_invite_link:
+                        msg += f"• Trip group: <a href='{trip.participant_invite_link}'>Join Here</a>\n\n"
+                    else:
+                        msg += "• Trip group link coming soon!\n\n"
+                    
+                    remaining = trip.price // 2
+                    msg += f"💵 <b>Remaining Payment:</b> {remaining:,} UZS\n"
+                    msg += f"💰 <b>Total Trip Price:</b> {trip.price:,} UZS"
+                    
+                elif new_status_obj == PaymentStatus.full_paid:
+                    msg += (
+                        "<b>✅ You're FULLY PAID!</b>\n\n"
+                        "<b>🎉 Congratulations!</b>\n"
+                        "• All payments completed\n"
+                        "• You're all set for the trip\n"
+                    )
+                    
+                    # Send group link if status changed from not_paid
+                    if old_status == PaymentStatus.not_paid and trip.participant_invite_link:
+                        msg += f"\n🔗 <b>Join the Trip Group:</b>\n<a href='{trip.participant_invite_link}'>👉 Click here to join</a>\n\n"
+                    elif trip.participant_invite_link:
+                        msg += f"• Trip group: <a href='{trip.participant_invite_link}'>Join Here</a>\n\n"
+                    else:
+                        msg += "• Stay tuned for trip updates!\n\n"
+                    
+                    msg += f"💰 <b>Total Paid:</b> {trip.price:,} UZS\n\n"
+                    msg += "See you on the trip! 🌍✈️"
+                
+                await tg_bot.send_message(
+                    user.telegram_id,
+                    msg,
+                    parse_mode='HTML',
+                    disable_web_page_preview=True
+                )
+                logging.info("admin.member status notification sent member_id=%s status=%s tg_id=%s", 
+                           member_id, new_status, user.telegram_id)
+                
+            except Exception as e:
+                logging.error(f"Failed to send status update notification to user {user.telegram_id}: {e}")
+                # Don't fail the request if notification fails
+        
+        # Send congratulations email ONLY when receipt is approved (status changes FROM not_paid)
+        if user and trip and old_status == PaymentStatus.not_paid and new_status_obj in (PaymentStatus.half_paid, PaymentStatus.full_paid):
+            if user.email:
+                try:
+                    # Construct full name from first_name and last_name
+                    full_name_parts = []
+                    if user.first_name:
+                        full_name_parts.append(user.first_name)
+                    if user.last_name:
+                        full_name_parts.append(user.last_name)
+                    full_name = " ".join(full_name_parts) if full_name_parts else "Traveler"
+                    
+                    email_service = get_email_service()
+                    email_sent = email_service.send_payment_confirmation_email(
+                        recipient_email=user.email,
+                        recipient_name=full_name,
+                        trip_name=trip.name,
+                        trip_price=trip.price,
+                        status=new_status
+                    )
+                    if email_sent:
+                        logging.info("admin.member confirmation email sent member_id=%s email=%s old_status=%s new_status=%s", 
+                                   member_id, user.email, old_status.value, new_status)
+                    else:
+                        logging.warning("admin.member email sending returned False member_id=%s", member_id)
+                except Exception as e:
+                    logging.error(f"Failed to send confirmation email to {user.email}: {e}")
+                    # Don't fail the request if email fails
+            else:
+                logging.info("admin.member no email address for member_id=%s, skipping confirmation email", member_id)
+        
+        logging.info("admin.member status updated member_id=%s old_status=%s new_status=%s", 
+                    member_id, old_status.value if old_status else None, new_status)
         return JSONResponse({"ok": True})
     finally:
         try:
@@ -296,13 +476,15 @@ async def kick_member(request: Request, member_id: int):
 
 
 @router.get("/api/trip/{trip_id}/export-excel")
-async def export_trip_excel(request: Request, trip_id: int):
-    """Export trip members to a styled Excel file."""
+async def export_trip_excel(request: Request, trip_id: int, send_to_chat: bool = False):
+    """Export trip members to a styled Excel file and optionally send to Telegram chat."""
     _require_admin(request)
     from models.User import User
     from openpyxl import Workbook
     from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
     from openpyxl.utils import get_column_letter
+    import io
+    from bot import bot
     
     db_gen = get_db()
     db: Session = next(db_gen)
@@ -449,7 +631,32 @@ async def export_trip_excel(request: Request, trip_id: int):
         # Generate filename
         filename = f"{trip.name.replace(' ', '_')}_Members_{datetime.now().strftime('%Y%m%d')}.xlsx"
         
+        # Send to chat if requested
+        if send_to_chat:
+            try:
+                # Get admin's Telegram ID from request header
+                tg_id = request.headers.get('X-Telegram-Id')
+                if tg_id:
+                    tg_id = int(tg_id)
+                    # Create a copy of the file for sending
+                    excel_file_copy = BytesIO(excel_file.getvalue())
+                    excel_file_copy.name = filename
+                    
+                    # Send document to chat
+                    await bot.send_document(
+                        tg_id,
+                        excel_file_copy,
+                        caption=f"📊 <b>{trip.name}</b>\n\nMember list export\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                        parse_mode='HTML'
+                    )
+                    logging.info("admin.export_excel sent_to_chat trip_id=%s tg_id=%s", trip_id, tg_id)
+            except Exception as e:
+                logging.error(f"Failed to send Excel to chat: {e}")
+        
         logging.info("admin.export_excel trip_id=%s members=%s", trip_id, len(members))
+        
+        # Reset file position for download
+        excel_file.seek(0)
         
         return StreamingResponse(
             excel_file,
@@ -457,6 +664,102 @@ async def export_trip_excel(request: Request, trip_id: int):
             headers={"Content-Disposition": f"attachment; filename={filename}"}
         )
         
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
+
+
+@router.get("/trip/{trip_id}/edit")
+async def edit_trip_page(request: Request, trip_id: int):
+    """Show edit trip form."""
+    # Check if request is from Telegram WebApp
+    error_response = require_telegram_webapp(request, Config.BOT_USERNAME)
+    if error_response:
+        return error_response
+    
+    db_gen = get_db()
+    db: Session = next(db_gen)
+    
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).first()
+        if not trip:
+            raise HTTPException(status_code=404, detail="Trip not found")
+        
+        return templates.TemplateResponse(
+            "edit_trip.html",
+            {
+                "request": request,
+                "trip": trip,
+            }
+        )
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
+
+
+@router.post("/api/trip/{trip_id}/update")
+async def update_trip(request: Request, trip_id: int):
+    """Update trip properties."""
+    _require_admin(request)
+    
+    db_gen = get_db()
+    db: Session = next(db_gen)
+    
+    try:
+        trip = db.query(Trip).filter(Trip.id == trip_id).first()
+        if not trip:
+            raise HTTPException(status_code=404, detail="Trip not found")
+        
+        # Get form data
+        form_data = await request.json()
+        
+        # Update fields
+        if 'name' in form_data:
+            trip.name = form_data['name'].strip()
+        if 'price' in form_data:
+            trip.price = int(form_data['price'])
+        if 'participant_limit' in form_data:
+            limit_value = form_data['participant_limit']
+            trip.participant_limit = int(limit_value) if limit_value and str(limit_value).strip() else None
+        if 'card_info' in form_data:
+            trip.card_info = form_data['card_info'].strip() or None
+        if 'agreement_text' in form_data:
+            trip.agreement_text = form_data['agreement_text'].strip() or None
+        
+        db.commit()
+        db.refresh(trip)
+        
+        logging.info("admin.trip_updated trip_id=%s", trip_id)
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Trip updated successfully",
+            "trip": {
+                "id": trip.id,
+                "name": trip.name,
+                "price": trip.price,
+                "participant_limit": trip.participant_limit,
+                "card_info": trip.card_info,
+                "agreement_text": trip.agreement_text,
+            }
+        })
+        
+    except ValueError as e:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": f"Invalid input: {str(e)}"}
+        )
+    except Exception as e:
+        db.rollback()
+        logging.error(f"Error updating trip {trip_id}: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "Failed to update trip"}
+        )
     finally:
         try:
             next(db_gen)

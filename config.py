@@ -76,6 +76,10 @@ class Config:
     CLIENT_SECRET: str = os.getenv("CLIENT_SECRET", "")
     # Optional explicit OAuth redirect URI to ensure exact match with Google Console
     OAUTH_REDIRECT_URI: str = os.getenv("OAUTH_REDIRECT_URI", "")
+    
+    # Email settings for sending notifications
+    EMAIL: str = os.getenv("EMAIL", "")
+    EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD", "")
 
     @staticmethod
     def get_database_url() -> str:
