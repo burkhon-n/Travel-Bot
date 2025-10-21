@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import requests
 import logging
+import asyncio
 
 from config import Config
 from database import get_db
@@ -155,14 +156,14 @@ async def auth_callback(request: Request):
         # Send onboarding messages to user
         from bot import bot
         try:
-            bot.send_message(
+            asyncio.create_task(bot.send_message(
                 tg_id,
                 "🎉 <b>Registration Successful!</b>\n\n"
                 "Welcome to Travel Bot! You're all set to start exploring trips.",
                 parse_mode='HTML'
-            )
+            ))
         except Exception as e:
-            logging.warning(f"Failed to send success message to user {tg_id}: {e}")
+            logging.warning(f"Failed to queue success message to user {tg_id}: {e}")
         
         try:
             help_text = (
@@ -181,9 +182,9 @@ async def auth_callback(request: Request):
                 "5️⃣ Get your confirmed seat!\n\n"
                 "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
             )
-            bot.send_message(tg_id, help_text, parse_mode='HTML')
+            asyncio.create_task(bot.send_message(tg_id, help_text, parse_mode='HTML'))
         except Exception as e:
-            logging.warning(f"Failed to send instructions to user {tg_id}: {e}")
+            logging.warning(f"Failed to queue instructions to user {tg_id}: {e}")
         
         # Build user display name
         user_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or email.split('@')[0]
