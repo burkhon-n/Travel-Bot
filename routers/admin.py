@@ -272,7 +272,6 @@ async def update_member_status(request: Request, member_id: int):
     _require_admin(request)
     from bot import bot as tg_bot
     from models.User import User
-    from email_service import get_email_service
     
     data = await request.json()
     new_status = (data.get("status") or "").lower()
@@ -399,36 +398,8 @@ async def update_member_status(request: Request, member_id: int):
                 logging.error(f"Failed to send status update notification to user {user.telegram_id}: {e}")
                 # Don't fail the request if notification fails
         
-        # Send congratulations email ONLY when receipt is approved (status changes FROM not_paid)
-        if user and trip and old_status == PaymentStatus.not_paid and new_status_obj in (PaymentStatus.half_paid, PaymentStatus.full_paid):
-            if user.email:
-                try:
-                    # Construct full name from first_name and last_name
-                    full_name_parts = []
-                    if user.first_name:
-                        full_name_parts.append(user.first_name)
-                    if user.last_name:
-                        full_name_parts.append(user.last_name)
-                    full_name = " ".join(full_name_parts) if full_name_parts else "Traveler"
-                    
-                    email_service = get_email_service()
-                    email_sent = email_service.send_payment_confirmation_email(
-                        recipient_email=user.email,
-                        recipient_name=full_name,
-                        trip_name=trip.name,
-                        trip_price=trip.price,
-                        status=new_status
-                    )
-                    if email_sent:
-                        logging.info("admin.member confirmation email sent member_id=%s email=%s old_status=%s new_status=%s", 
-                                   member_id, user.email, old_status.value, new_status)
-                    else:
-                        logging.warning("admin.member email sending returned False member_id=%s", member_id)
-                except Exception as e:
-                    logging.error(f"Failed to send confirmation email to {user.email}: {e}")
-                    # Don't fail the request if email fails
-            else:
-                logging.info("admin.member no email address for member_id=%s, skipping confirmation email", member_id)
+        # Email sending temporarily disabled - will be re-enabled after admin discussion
+        # TODO: Add email confirmation when ready
         
         logging.info("admin.member status updated member_id=%s old_status=%s new_status=%s", 
                     member_id, old_status.value if old_status else None, new_status)

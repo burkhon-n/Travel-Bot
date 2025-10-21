@@ -79,7 +79,7 @@ class Config:
     
     # Email settings for sending notifications
     EMAIL: str = os.getenv("EMAIL", "")
-    EMAIL_PASSWORD: str = os.getenv("EMAIL_PASSWORD", "")
+    EMAIL_PASS: str = os.getenv("EMAIL_PASS", "")
 
     @staticmethod
     def get_database_url() -> str:
