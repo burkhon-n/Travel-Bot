@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import requests
 import logging
+import asyncio
 
 from config import Config
 from database import get_db
@@ -154,36 +155,53 @@ async def auth_callback(request: Request):
         
         # Send onboarding instructions to user via bot
         from bot import bot
-        import asyncio
         
-        async def send_onboarding():
+        def send_onboarding_sync():
+            """Send onboarding messages to newly registered user."""
             try:
-                # Short success ping
-                await bot.send_message(
-                    tg_id,
-                    "🎉 <b>Registration Successful!</b>\n\nYou're all set.",
-                    parse_mode='HTML'
-                )
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    # Success notification
+                    loop.run_until_complete(
+                        bot.send_message(
+                            tg_id,
+                            "🎉 <b>Registration Successful!</b>\n\n"
+                            "Welcome to Travel Bot! You're all set to start exploring trips.",
+                            parse_mode='HTML'
+                        )
+                    )
 
-                # Detailed usage instructions (aligned with /help)
-                help_text = (
-                    "❓ <b>How to use Travel Bot</b>\n\n"
-                    "1) <b>Register</b>: Use /start and tap Register with Google (must be @newuu.uz).\n"
-                    "2) <b>Browse trips</b>: Use /trips to see available trips and view terms.\n"
-                    "3) <b>Register for a trip</b>: Confirm the agreement to join.\n"
-                    "4) <b>Pay 50%</b>: Send your receipt to get your seat reserved.\n"
-                    "5) <b>Check status</b>: Use /mystatus anytime.\n\n"
-                    "📊 <b>Live stats</b>: Use /stats or the '📊 View Stats' button to see current numbers.\n"
-                    "🧭 <b>Main menu</b>: Use /menu for quick actions."
-                )
-                await bot.send_message(tg_id, help_text, parse_mode='HTML')
+                    # Detailed usage instructions
+                    help_text = (
+                        "📖 <b>Quick Start Guide</b>\n\n"
+                        "<b>Available Commands:</b>\n"
+                        "🎫 <b>/trips</b> – Browse and register for trips\n"
+                        "💳 <b>/mystatus</b> – Check your payment status\n"
+                        "📊 <b>/stats</b> – View trip statistics\n"
+                        "🧭 <b>/menu</b> – Main menu with all options\n"
+                        "❓ <b>/help</b> – Full usage guide\n\n"
+                        "<b>How it works:</b>\n"
+                        "1️⃣ Find a trip with /trips\n"
+                        "2️⃣ Register and confirm the agreement\n"
+                        "3️⃣ Upload a 50% payment receipt\n"
+                        "4️⃣ Upload final payment receipt to complete\n"
+                        "5️⃣ Get your confirmed seat!\n\n"
+                        "💡 <i>Tip: Use /menu anytime to see available actions.</i>"
+                    )
+                    loop.run_until_complete(
+                        bot.send_message(tg_id, help_text, parse_mode='HTML')
+                    )
+                finally:
+                    loop.close()
             except Exception as e:
-                logging.error(f"Error sending onboarding to user: {e}")
+                logging.error(f"Error sending onboarding messages to user {tg_id}: {e}", exc_info=True)
         
-        # Run async task
+        # Send onboarding synchronously before returning response
         try:
-            asyncio.create_task(send_onboarding())
-        except:
+            send_onboarding_sync()
+        except Exception as e:
+            logging.error(f"Failed to queue onboarding for user {tg_id}: {e}")
             pass
         
         # Build user display name
