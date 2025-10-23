@@ -183,6 +183,9 @@ async def start_handler(message: types.Message):
             )
             keyboard.row(
                 types.InlineKeyboardButton(text="📊 View Stats", callback_data="menu:stats"),
+                types.InlineKeyboardButton(text="📅 Trip Agenda", callback_data="menu:agenda")
+            )
+            keyboard.row(
                 types.InlineKeyboardButton(text="❓ Help", callback_data="menu:help")
             )
             
@@ -192,6 +195,7 @@ async def start_handler(message: types.Message):
                 f"🗺 Browse available trips\n"
                 f"🧾 Check your registration status\n"
                 f"📊 View trip statistics\n"
+                f"📅 View trip schedules\n"
                 f"❓ Get help and tips\n\n"
                 f"Choose an option below or type /menu anytime!"
             )
@@ -1462,6 +1466,9 @@ async def menu_handler(message: types.Message):
     )
     kb.row(
         types.InlineKeyboardButton(text="📊 View Stats", callback_data="menu:stats"),
+        types.InlineKeyboardButton(text="📅 Trip Agenda", callback_data="menu:agenda"),
+    )
+    kb.row(
         types.InlineKeyboardButton(text="❓ Help Guide", callback_data="menu:help"),
     )
     await bot.send_message(
@@ -1500,6 +1507,13 @@ async def menu_callback(call: types.CallbackQuery):
                 self.from_user = call.from_user
         await stats_command_handler(DummyMessage(call.message.chat))
         await bot.answer_callback_query(call.id)
+    elif action == 'agenda':
+        class DummyMessage:
+            def __init__(self, chat):
+                self.chat = chat
+                self.from_user = call.from_user
+        await agenda_handler(DummyMessage(call.message.chat))
+        await bot.answer_callback_query(call.id)
     elif action == 'help':
         await help_handler(call.message)
         await bot.answer_callback_query(call.id)
@@ -1528,6 +1542,7 @@ async def help_handler(message: types.Message):
         "• /trips - Browse available trips\n"
         "• /mystatus - Check your registration\n"
         "• /stats - View trip statistics\n"
+        "• /agenda - View trip schedule\n"
         "• /menu - Quick navigation menu\n"
         "• /help - Show this guide\n\n"
         "<b>💡 Pro Tips</b>\n"
@@ -1538,6 +1553,97 @@ async def help_handler(message: types.Message):
         "Questions? Contact the trip organizer! 🌍"
     )
     await bot.send_message(message.chat.id, text, parse_mode='HTML')
+
+
+@bot.message_handler(commands=['agenda'])
+async def agenda_handler(message: types.Message):
+    """Show trip agenda/schedule. Only works in private chats."""
+    from models.Trip import Trip, TripStatus
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
+    tg_id = message.from_user.id
+    db_gen = get_db()
+    db: Session = next(db_gen)
+    
+    try:
+        # Check if user is registered
+        user = db.query(User).filter(User.telegram_id == tg_id).first()
+        if not user:
+            keyboard = types.InlineKeyboardMarkup()
+            webapp_url = f"{Config.URL.rstrip('/')}/webapp/register"
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text="✨ Register Now",
+                    web_app=types.WebAppInfo(url=webapp_url)
+                )
+            )
+            await bot.send_message(
+                message.chat.id,
+                "⚠️ <b>Registration Required</b>\n\n"
+                "You need to register before viewing trip agendas.\n\n"
+                "Tap the button below to get started! 👇",
+                parse_mode='HTML',
+                reply_markup=keyboard
+            )
+            return
+        
+        # Get active trips
+        active_trips = db.query(Trip).filter(Trip.status == TripStatus.active).all()
+        
+        if not active_trips:
+            await bot.send_message(
+                message.chat.id,
+                "📭 <b>No Active Trips</b>\n\n"
+                "There are no trips available right now. Check back soon! 🌍",
+                parse_mode='HTML'
+            )
+            return
+        
+        # If there's only one trip, show its agenda directly
+        if len(active_trips) == 1:
+            trip = active_trips[0]
+            keyboard = types.InlineKeyboardMarkup()
+            keyboard.add(
+                types.InlineKeyboardButton(
+                    text=f"📅 View {trip.name} Agenda",
+                    web_app=types.WebAppInfo(url=f"{Config.URL.rstrip('/')}/webapp/agenda?trip_id={trip.id}")
+                )
+            )
+            await bot.send_message(
+                message.chat.id,
+                f"📅 <b>Trip Agenda</b>\n\n"
+                f"View the detailed schedule for <b>{trip.name}</b>:",
+                parse_mode='HTML',
+                reply_markup=keyboard
+            )
+        else:
+            # Multiple trips - let user choose
+            keyboard = types.InlineKeyboardMarkup()
+            for trip in active_trips:
+                keyboard.add(
+                    types.InlineKeyboardButton(
+                        text=f"📅 {trip.name}",
+                        web_app=types.WebAppInfo(url=f"{Config.URL.rstrip('/')}/webapp/agenda?trip_id={trip.id}")
+                    )
+                )
+            await bot.send_message(
+                message.chat.id,
+                "📅 <b>Trip Agendas</b>\n\n"
+                "Select a trip to view its detailed schedule:",
+                parse_mode='HTML',
+                reply_markup=keyboard
+            )
+        
+        logging.info("cmd.agenda from=%s", tg_id)
+        
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
 
 
 @bot.message_handler(commands=['admin'])

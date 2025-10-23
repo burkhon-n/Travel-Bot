@@ -172,6 +172,7 @@ async def auth_callback(request: Request):
                 "🎫 <b>/trips</b> – Browse and register for trips\n"
                 "💳 <b>/mystatus</b> – Check your payment status\n"
                 "📊 <b>/stats</b> – View trip statistics\n"
+                "📅 <b>/agenda</b> – View trip schedules\n"
                 "🧭 <b>/menu</b> – Main menu with all options\n"
                 "❓ <b>/help</b> – Full usage guide\n\n"
                 "<b>How it works:</b>\n"

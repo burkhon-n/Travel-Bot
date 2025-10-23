@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samarqand Safari | Yangi O'zbekiston</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #2c3e50;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            max-width: 900px;
+        }
+
+        .hero-content h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero-content .subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-content .dates {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-section {
+            background: white;
+            padding: 4rem 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .day-block {
+            margin-bottom: 5rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .day-block:nth-child(1) { animation-delay: 0.1s; }
+        .day-block:nth-child(2) { animation-delay: 0.2s; }
+        .day-block:nth-child(3) { animation-delay: 0.3s; }
+
+        .day-header {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .day-number {
+            position: absolute;
+            left: 0;
+            top: -10px;
+            font-size: 5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0.2;
+        }
+
+        .day-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-date {
+            font-size: 1.2rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        .event-card {
+            position: relative;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: white;
+            border-radius: 15px;
+            border: 2px solid #e8eef5;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateX(10px);
+            border-color: #667eea;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            left: -3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover::before {
+            background: #764ba2;
+            transform: translateY(-50%) scale(1.3);
+            box-shadow: 0 0 0 2px #764ba2, 0 0 20px rgba(118, 75, 162, 0.5);
+        }
+
+        .event-time {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            color: white;
+        }
+
+        .event-description {
+            color: #34495e;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .event-card.highlight {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+            border-color: #ff6b6b;
+        }
+
+        .event-card.highlight .event-time {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        }
+
+        .event-card.highlight::before {
+            background: #ff6b6b;
+            box-shadow: 0 0 0 2px #ff6b6b;
+        }
+
+        .icon {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-content .subtitle {
+                font-size: 1.2rem;
+            }
+
+            .day-number {
+                font-size: 3rem;
+            }
+
+            .day-title {
+                font-size: 1.8rem;
+            }
+
+            .timeline {
+                padding-left: 2rem;
+            }
+
+            .event-card::before {
+                left: -2rem;
+            }
+
+            .content-section {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <div class="subtitle">✨ ICHKI TURIZM DASTURI ✨</div>
+            <h1>SAMARQAND SAFARI</h1>
+            <div class="dates">8-9 noyabr | Yangi O'zbekiston Universiteti</div>
+        </div>
+        <div class="scroll-indicator">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container">
+            <div class="day-block">
+                <div class="day-header">
+                    <div class="day-number">01</div>
+                    <div class="day-title">Safar boshlanadi</div>
+                    <div class="day-date">7-noyabr, Juma</div>
+                </div>
+                <div class="timeline">
+                    <div class="event-card highlight">
+                        <div class="event-time">🚌 23:59</div>
+                        <div class="event-description">
+                            Chiqib ketish
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-block">
+                <div class="day-header">
+                    <div class="day-number">02</div>
+                    <div class="day-title">Birinchi kun</div>
+                    <div class="day-date">8-noyabr, Shanba</div>
+                </div>
+                <div class="timeline">
+                    <div class="event-card">
+                        <div class="event-time">05:00 - 06:00</div>
+                        <div class="event-description">
+                            <span class="icon">🔭</span> Mirzo Ulug'bek rasadxonasiga tashrif
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">06:00 - 07:30</div>
+                        <div class="event-description">
+                            <span class="icon">🍳</span> Samarqand shahrida nonushta
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">08:00 - 10:30</div>
+                        <div class="event-description">
+                            <span class="icon">🕌</span> Samarqand shahri bo'ylab sayohat. Islom Karimov maqbarasi va Shohi Zinda majmuasiga tashrif
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">11:00 - 12:00</div>
+                        <div class="event-description">
+                            <span class="icon">👑</span> Go'ri Amir mavzoleysiga tashrif
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">12:30 - 14:00</div>
+                        <div class="event-description">
+                            <span class="icon">🍛</span> Osh markazida tushlik
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">14:30 - 16:30</div>
+                        <div class="event-description">
+                            <span class="icon">🏨</span> Mehmonxonada xordiq
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">17:00 - 20:00</div>
+                        <div class="event-description">
+                            <span class="icon">🌆</span> Boqiy shahar bo'ylab sayohat
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">20:30 - 22:00</div>
+                        <div class="event-description">
+                            <span class="icon">🍽️</span> Kechki ovqat
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">22:30</div>
+                        <div class="event-description">
+                            <span class="icon">🌙</span> Mehmonxonaga jo'nab ketish
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-block">
+                <div class="day-header">
+                    <div class="day-number">03</div>
+                    <div class="day-title">Yakuniy kun</div>
+                    <div class="day-date">9-noyabr, Yakshanba</div>
+                </div>
+                <div class="timeline">
+                    <div class="event-card">
+                        <div class="event-time">06:00</div>
+                        <div class="event-description">
+                            <span class="icon">🌅</span> Marafonga jo'nab ketish
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">07:00 - 11:00</div>
+                        <div class="event-description">
+                            <span class="icon">🏛️</span> Bibixonim madrasasi hamda Registon maydoniga tashrif
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">12:00 - 13:00</div>
+                        <div class="event-description">
+                            <span class="icon">👥</span> Talabalarni bir joyga yig'ish
+                        </div>
+                    </div>
+
+                    <div class="event-card highlight">
+                        <div class="event-time">🚌 13:30</div>
+                        <div class="event-description">
+                            Samarqand shahridan jo'nab ketish
+                        </div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-time">15:30 - 17:00</div>
+                        <div class="event-description">
+                            <span class="icon">🍴</span> Jizzax somsada tushlik
+                        </div>
+                    </div>
+
+                    <div class="event-card highlight">
+                        <div class="event-time">🏁 17:30</div>
+                        <div class="event-description">
+                            Toshkentga jo'nab ketish
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

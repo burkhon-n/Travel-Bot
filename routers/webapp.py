@@ -174,3 +174,30 @@ async def trip_stats_webapp(request: Request):
             next(db_gen)
         except StopIteration:
             pass
+
+
+@router.get("/agenda", response_class=HTMLResponse)
+async def trip_agenda_webapp(request: Request):
+    """Render trip agenda/schedule page.
+    
+    Shows the detailed itinerary for the trip.
+    Accessible from Telegram WebApp.
+    """
+    # Check if request is from Telegram WebApp
+    error_response = require_telegram_webapp(request, Config.BOT_USERNAME)
+    if error_response:
+        return error_response
+    
+    params = request.query_params
+    trip_id = params.get("trip_id")
+    
+    # For now, we'll use the Samarkand trip agenda
+    # In the future, you can add logic to select different agendas based on trip_id
+    
+    logging.info("webapp.agenda render trip_id=%s", trip_id)
+    return templates.TemplateResponse(
+        "agenda/smarkand_trip.html",
+        {
+            "request": request,
+        }
+    )
