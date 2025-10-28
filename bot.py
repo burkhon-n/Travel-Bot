@@ -1765,6 +1765,14 @@ async def logout_handler(message: types.Message):
         
         warning_msg += "Think carefully before proceeding! 🤔"
         
+        # First remove any custom keyboard
+        await bot.send_message(
+            message.chat.id,
+            "🔄 Processing logout request...",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
+        
+        # Then send confirmation with inline keyboard
         await bot.send_message(
             message.chat.id,
             warning_msg,
