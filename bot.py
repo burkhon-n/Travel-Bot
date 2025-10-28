@@ -160,6 +160,8 @@ async def start_handler(message: types.Message):
     If the user already exists, send a welcome back message. Otherwise,
     create a new User record and greet them.
     
+    Supports deep linking: /start agenda_TRIP_ID will open agenda directly.
+    
     Only works in private chats.
     """
     # Ignore group messages
@@ -167,13 +169,71 @@ async def start_handler(message: types.Message):
         return
     
     tg_id = message.from_user.id
-    logging.info("cmd.start from=%s chat=%s type=%s", tg_id, message.chat.id, message.chat.type)
+    
+    # Check for deep link parameters (e.g., /start agenda_1)
+    start_param = None
+    if message.text and len(message.text.split()) > 1:
+        start_param = message.text.split()[1]
+    
+    logging.info("cmd.start from=%s chat=%s type=%s param=%s", tg_id, message.chat.id, message.chat.type, start_param)
 
     # get_db is a generator that yields a session; call it and get the session
     db_gen = get_db()
     db: Session = next(db_gen)
     try:
         user = db.query(User).filter(User.telegram_id == tg_id).first()
+        
+        # Handle deep link for agenda
+        if start_param and start_param.startswith('agenda_'):
+            from models.Trip import Trip, TripStatus
+            try:
+                trip_id = int(start_param.replace('agenda_', ''))
+                trip = db.query(Trip).filter(Trip.id == trip_id, Trip.status == TripStatus.active).first()
+                
+                if trip:
+                    # If user not registered, prompt registration first
+                    if not user:
+                        webapp_url = f"{Config.URL.rstrip('/')}/webapp/register"
+                        keyboard = types.InlineKeyboardMarkup()
+                        keyboard.add(
+                            types.InlineKeyboardButton(
+                                text="✨ Register with Google",
+                                web_app=types.WebAppInfo(url=webapp_url)
+                            )
+                        )
+                        await bot.send_message(
+                            message.chat.id,
+                            f"✈️ <b>Welcome to Travel Bot!</b>\n\n"
+                            f"You're trying to view the agenda for <b>{trip.name}</b>. 📅\n\n"
+                            f"Please register first to access trip information:\n\n"
+                            f"Tap the button below to get started! 👇",
+                            parse_mode='HTML',
+                            reply_markup=keyboard
+                        )
+                        return
+                    
+                    # User is registered - show agenda
+                    keyboard = types.InlineKeyboardMarkup()
+                    keyboard.add(
+                        types.InlineKeyboardButton(
+                            text=f"📅 Open {trip.name} Agenda",
+                            web_app=types.WebAppInfo(url=f"{Config.URL.rstrip('/')}/webapp/agenda?trip_id={trip.id}")
+                        )
+                    )
+                    await bot.send_message(
+                        message.chat.id,
+                        f"📅 <b>Trip Agenda</b>\n\n"
+                        f"View the detailed schedule for <b>{trip.name}</b>:\n\n"
+                        f"Tap the button below to open the agenda! 👇",
+                        parse_mode='HTML',
+                        reply_markup=keyboard
+                    )
+                    logging.info("deeplink.agenda user=%s trip_id=%s", tg_id, trip_id)
+                    return
+            except (ValueError, AttributeError):
+                # Invalid trip_id format - continue with normal flow
+                pass
+        
         if user:
             # Returning user - show friendly greeting with quick actions
             keyboard = types.InlineKeyboardMarkup()
@@ -1544,7 +1604,8 @@ async def help_handler(message: types.Message):
         "• /stats - View trip statistics\n"
         "• /agenda - View trip schedule\n"
         "• /menu - Quick navigation menu\n"
-        "• /help - Show this guide\n\n"
+        "• /help - Show this guide\n"
+        "• /logout - Delete your account\n\n"
         "<b>💡 Pro Tips</b>\n"
         "• Pay early to secure your spot!\n"
         "• Keep your receipt clear and readable\n"
@@ -1644,6 +1705,176 @@ async def agenda_handler(message: types.Message):
             next(db_gen)
         except StopIteration:
             pass
+
+
+@bot.message_handler(commands=['logout'])
+async def logout_handler(message: types.Message):
+    """Handle logout request with confirmation. Only works in private chats."""
+    
+    # Ignore group messages
+    if message.chat.type in ('group', 'supergroup'):
+        return
+    
+    tg_id = message.from_user.id
+    db_gen = get_db()
+    db: Session = next(db_gen)
+    
+    try:
+        # Check if user exists
+        user = db.query(User).filter(User.telegram_id == tg_id).first()
+        if not user:
+            await bot.send_message(
+                message.chat.id,
+                "ℹ️ <b>Not Registered</b>\n\n"
+                "You don't have an account to delete.\n\n"
+                "Use /start if you want to register.",
+                parse_mode='HTML'
+            )
+            return
+        
+        # Check if user has active trip registrations
+        from models.TripMember import TripMember, PaymentStatus
+        active_registrations = db.query(TripMember).filter(
+            TripMember.user_id == user.id,
+            TripMember.payment_status.in_([PaymentStatus.half_paid, PaymentStatus.full_paid])
+        ).count()
+        
+        # Create confirmation keyboard
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.row(
+            types.InlineKeyboardButton(text="✅ Yes, Delete My Account", callback_data="confirm_logout"),
+            types.InlineKeyboardButton(text="❌ Cancel", callback_data="cancel_logout")
+        )
+        
+        warning_msg = (
+            f"⚠️ <b>Delete Account?</b>\n\n"
+            f"Are you sure you want to delete your account?\n\n"
+            f"<b>⚠️ This action cannot be undone!</b>\n\n"
+            f"<b>What will be deleted:</b>\n"
+            f"• Your profile information\n"
+            f"• All trip registrations\n"
+            f"• Payment records\n"
+            f"• Access to trip groups\n\n"
+        )
+        
+        if active_registrations > 0:
+            warning_msg += (
+                f"⚠️ <b>You have {active_registrations} active trip registration(s)!</b>\n"
+                f"Deleting your account will remove you from these trips.\n\n"
+            )
+        
+        warning_msg += "Think carefully before proceeding! 🤔"
+        
+        await bot.send_message(
+            message.chat.id,
+            warning_msg,
+            parse_mode='HTML',
+            reply_markup=keyboard
+        )
+        logging.info("cmd.logout requested from=%s", tg_id)
+        
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'confirm_logout')
+async def confirm_logout_handler(call: types.CallbackQuery):
+    """Handle logout confirmation - delete user account."""
+    
+    tg_id = call.from_user.id
+    db_gen = get_db()
+    db: Session = next(db_gen)
+    
+    try:
+        user = db.query(User).filter(User.telegram_id == tg_id).first()
+        if not user:
+            await bot.answer_callback_query(call.id, "❌ User not found.")
+            return
+        
+        # Get user info before deletion for logging
+        user_email = user.email
+        user_name = f"{user.first_name} {user.last_name or ''}".strip()
+        
+        # Delete user (cascade will handle trip_members due to foreign key)
+        db.delete(user)
+        db.commit()
+        
+        # Remove keyboard
+        await bot.edit_message_reply_markup(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=None
+        )
+        
+        await bot.edit_message_text(
+            "✅ <b>Account Deleted</b>\n\n"
+            "Your account has been successfully deleted.\n\n"
+            "All your data has been removed from our system.\n\n"
+            "If you change your mind, you can always register again using /start.\n\n"
+            "Thank you for using Travel Bot! We hope to see you again. 👋",
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            parse_mode='HTML'
+        )
+        
+        await bot.answer_callback_query(call.id, "✅ Account deleted successfully")
+        logging.info("user.deleted tg_id=%s email=%s name=%s", tg_id, user_email, user_name)
+        
+    except Exception as e:
+        logging.error(f"Error deleting user account for {tg_id}: {e}", exc_info=True)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        
+        error_msg = "❌ <b>Deletion Failed</b>\n\n"
+        
+        if "foreign key" in str(e).lower() or "constraint" in str(e).lower():
+            error_msg += (
+                "Cannot delete account due to active dependencies.\n\n"
+                "This might be a temporary issue. Please try again or contact support.\n\n"
+                "Error code: FK_CONSTRAINT"
+            )
+        elif "database" in str(e).lower():
+            error_msg += (
+                "Database error occurred during deletion.\n\n"
+                "Please try again in a moment.\n\n"
+                "Error code: DB_ERROR"
+            )
+        else:
+            error_msg += (
+                "An unexpected error occurred.\n\n"
+                "Please try again or contact support.\n\n"
+                f"Error code: DELETE_ERROR\n"
+                f"Details: {str(e)[:80]}"
+            )
+        
+        await bot.send_message(call.message.chat.id, error_msg, parse_mode='HTML')
+        await bot.answer_callback_query(call.id, "❌ Deletion failed - check message")
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'cancel_logout')
+async def cancel_logout_handler(call: types.CallbackQuery):
+    """Handle logout cancellation."""
+    
+    await bot.edit_message_text(
+        "✅ <b>Cancelled</b>\n\n"
+        "Your account is safe! No changes were made.\n\n"
+        "Use /menu to continue using the bot.",
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        parse_mode='HTML'
+    )
+    await bot.answer_callback_query(call.id, "✅ Logout cancelled")
+    logging.info("logout.cancelled from=%s", call.from_user.id)
 
 
 @bot.message_handler(commands=['admin'])

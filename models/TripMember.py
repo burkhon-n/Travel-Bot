@@ -12,8 +12,8 @@ class TripMember(Base):
     __tablename__ = "trip_members"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
-    trip_id = Column(Integer, ForeignKey('trips.id'), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    trip_id = Column(Integer, ForeignKey('trips.id', ondelete='CASCADE'), nullable=False, index=True)
     payment_status = Column(SQLEnum(PaymentStatus), default=PaymentStatus.not_paid, nullable=False, index=True)
     payment_receipt_file_id = Column(String, nullable=True)
     joined_at = Column(DateTime, default=datetime.utcnow, nullable=False)
