@@ -1798,7 +1798,11 @@ async def confirm_logout_handler(call: types.CallbackQuery):
         user_email = user.email
         user_name = f"{user.first_name} {user.last_name or ''}".strip()
         
-        # Delete user (cascade will handle trip_members due to foreign key)
+        # Manually delete all trip_members records first
+        from models.TripMember import TripMember
+        db.query(TripMember).filter(TripMember.user_id == user.id).delete()
+        
+        # Now delete the user
         db.delete(user)
         db.commit()
         
