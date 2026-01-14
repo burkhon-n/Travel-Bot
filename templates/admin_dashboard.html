@@ -11,28 +11,34 @@
     
     :root {
       /* Force light theme regardless of Telegram or OS theme */
-      --tg-theme-bg-color: #ffffff !important;
+      --tg-theme-bg-color: #f8fafd !important;
       --tg-theme-text-color: #0f172a !important;
       --tg-theme-hint-color: #64748b !important;
-      --tg-theme-link-color: #2563eb !important;
-      --tg-theme-button-color: #2563eb !important;
+      --tg-theme-link-color: #3b82f6 !important;
+      --tg-theme-button-color: #3b82f6 !important;
       --tg-theme-button-text-color: #ffffff !important;
       --tg-theme-secondary-bg-color: #f1f5f9 !important;
       
-      --primary: #2563eb;
+      --primary: #3b82f6;
+      --primary-light: #60a5fa;
       --success: #10b981;
+      --success-light: #6ee7b7;
       --warning: #f59e0b;
+      --warning-light: #fbbf24;
       --danger: #ef4444;
-      --bg: #f8fafc;
+      --danger-light: #f87171;
+      --bg: #f8fafd;
       --surface: #ffffff;
       --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.3);
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--tg-theme-bg-color, var(--bg));
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #eef5ff 100%);
       color: var(--tg-theme-text-color, var(--text));
       min-height: 100vh;
       padding: 0;
@@ -42,39 +48,50 @@
     }
     
     .header {
-      background: var(--tg-theme-button-color, var(--primary));
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
       color: var(--tg-theme-button-text-color, #fff);
-      padding: 20px 16px;
+      padding: 24px 16px;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+      backdrop-filter: blur(10px);
     }
     
     .header h1 {
-      font-size: 22px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: 800;
       margin-bottom: 4px;
+      letter-spacing: -0.5px;
     }
     
     .header p {
       font-size: 14px;
-      opacity: 0.85;
+      opacity: 0.9;
+      font-weight: 500;
     }
     
     .container {
-      padding: 16px;
+      padding: 20px 16px;
       max-width: 100%;
+      padding-bottom: 40px;
     }
     
     .trip-card {
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 1px solid var(--border);
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      border: 1.5px solid var(--glass-border);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .trip-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
     }
     
     .trip-card:active {
@@ -85,104 +102,153 @@
       display: flex;
       justify-content: space-between;
       align-items: start;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      gap: 12px;
     }
     
     .trip-name {
-      font-size: 17px;
-      font-weight: 600;
+      font-size: 19px;
+      font-weight: 700;
       color: var(--tg-theme-text-color, var(--text));
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     
     .trip-name a {
       color: inherit;
       text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .trip-name a:hover {
+      color: var(--primary);
+    }
+    
+    .trip-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .group-id {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 11px;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 6px 10px;
+      border-radius: 8px;
+      color: var(--primary);
+      display: inline-block;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .trip-price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    
+    .trip-price span {
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
     }
     
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 4px 10px;
+      padding: 6px 14px;
       border-radius: 12px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: capitalize;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.3px;
     }
     
     .badge-active {
-      background: #d1fae5;
-      color: #065f46;
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
     
     .badge-closed {
-      background: #fee2e2;
-      color: #991b1b;
+      background: rgba(239, 68, 68, 0.15);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
     
     .badge-cancelled {
-      background: #f3f4f6;
-      color: #374151;
+      background: rgba(107, 114, 128, 0.15);
+      color: #4b5563;
+      border: 1px solid rgba(107, 114, 128, 0.3);
     }
     
     .trip-stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     
     .stat-item {
-      background: var(--tg-theme-bg-color, #fff);
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
+      background: rgba(59, 130, 246, 0.05);
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      transition: all 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    
+    .stat-item:hover {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.2);
     }
     
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--tg-theme-hint-color, var(--text-muted));
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      font-weight: 700;
     }
     
     .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--tg-theme-text-color, var(--text));
-    }
-    
-    .group-id {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 12px;
-      background: var(--tg-theme-bg-color, #f1f5f9);
-      padding: 4px 8px;
-      border-radius: 6px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      display: inline-block;
-      margin-bottom: 8px;
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
     .action-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      gap: 10px;
     }
     
     .btn {
-      padding: 10px 14px;
-      border-radius: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      letter-spacing: 0.3px;
+      text-transform: capitalize;
+      backdrop-filter: blur(4px);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     }
     
     .btn:active {
@@ -190,78 +256,125 @@
     }
     
     .btn-primary {
-      background: var(--tg-theme-button-color, var(--primary));
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
       color: var(--tg-theme-button-text-color, #fff);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+      border: 1px solid rgba(59, 130, 246, 0.5);
     }
     
-    .btn-secondary {
-      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
-      color: var(--tg-theme-text-color, var(--text));
-      border: 1px solid var(--border);
+    .btn-primary:hover {
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
     }
     
     .btn-success {
-      background: var(--success);
+      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
       color: #fff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.5);
     }
     
-    .btn-warning {
-      background: var(--warning);
-      color: #fff;
+    .btn-success:hover {
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
     }
     
     .btn-danger {
-      background: var(--danger);
+      background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
       color: #fff;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    
+    .btn-danger:hover {
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
     
     .seats-info {
       font-size: 13px;
       color: var(--tg-theme-hint-color, var(--text-muted));
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border);
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(100, 116, 139, 0.08);
+      border: 1px solid rgba(100, 116, 139, 0.15);
+      font-weight: 500;
     }
     
     .seats-info strong {
-      color: var(--tg-theme-text-color, var(--text));
+      color: var(--text);
+      font-weight: 700;
     }
     
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { 
+        opacity: 0; 
+        transform: translateY(12px);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .trip-card {
-      animation: fadeIn 0.3s ease-out;
+      animation: slideUp 0.4s ease-out;
     }
+    
+    .trip-card:nth-child(1) { animation-delay: 0.05s; }
+    .trip-card:nth-child(2) { animation-delay: 0.1s; }
+    .trip-card:nth-child(3) { animation-delay: 0.15s; }
+    .trip-card:nth-child(n+4) { animation-delay: 0.2s; }
     
     .loading {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: var(--tg-theme-hint-color, var(--text-muted));
+      font-size: 16px;
+      font-weight: 500;
     }
     
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 80px 20px;
     }
     
     .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      opacity: 0.5;
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
     }
     
     .empty-state-text {
       color: var(--tg-theme-hint-color, var(--text-muted));
-      font-size: 15px;
+      font-size: 16px;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Admin Dashboard</h1>
+    <h1>✈️ Admin Dashboard</h1>
     <p>Manage trips and members</p>
   </div>
   
@@ -269,44 +382,46 @@
     {% for t in trips %}
     <div class="trip-card">
       <div class="trip-header">
-        <div>
+        <div class="trip-meta">
           <div class="trip-name">
             <a href="/admin/trip/{{ t.id }}">{{ t.name }}</a>
           </div>
-          <span class="group-id">{{ t.group_id }}</span>
-          <div style="margin-top: 6px; font-size: 14px; color: var(--tg-theme-hint-color, #64748b);">
-            💰 {{ "{:,}".format(t.price) }} UZS
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span class="group-id">ID: {{ t.group_id }}</span>
+            <span class="badge badge-{{ t.status }}">{{ t.status }}</span>
           </div>
         </div>
-        <span class="badge badge-{{ t.status }}">{{ t.status }}</span>
+        <div class="trip-price">
+          💰 <span>{{ "{:,}".format(t.price) }}</span> UZS
+        </div>
       </div>
       
       <div class="trip-stats">
         <div class="stat-item">
-          <div class="stat-label">Registered</div>
+          <div class="stat-label">📝 Registered</div>
           <div class="stat-value">{{ t.registered }}</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">Half Paid</div>
+          <div class="stat-label">💳 Half Paid</div>
           <div class="stat-value">{{ t.half_paid }}</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">Full Paid</div>
+          <div class="stat-label">✓ Full Paid</div>
           <div class="stat-value">{{ t.full_paid }}</div>
         </div>
         <div class="stat-item">
-          <div class="stat-label">Total Paid</div>
+          <div class="stat-label">💰 Total Paid</div>
           <div class="stat-value">{{ t.paid }}</div>
         </div>
       </div>
       
       {% if t.participant_limit %}
       <div class="seats-info">
-        <strong>{{ t.seats if t.seats is not none else (t.participant_limit - t.paid) }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
+        🪑 <strong>{{ t.seats if t.seats is not none else (t.participant_limit - t.paid) }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
       </div>
       {% endif %}
       
-      <div class="action-grid" style="margin-top: 12px;">
+      <div class="action-grid" style="margin-top: 16px;">
         <button class="btn btn-success js-trip-status" data-trip-id="{{ t.id }}" data-status="active">✓ Activate</button>
         <button class="btn btn-primary" onclick="window.location.href='/admin/trip/{{ t.id }}/edit'">✏️ Edit</button>
         <button class="btn btn-danger js-trip-status" data-trip-id="{{ t.id }}" data-status="cancelled">✕ Cancel</button>
@@ -328,13 +443,13 @@
       if (!hasInitData && !hasTelegramUser) {
         document.body.innerHTML = `
           <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-            <div style="max-width: 400px; background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
-              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
+            <div style="max-width: 400px; background: white; border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); backdrop-filter: blur(10px);">
+              <div style="font-size: 64px; margin-bottom: 20px; animation: float 3s ease-in-out infinite;">🔒</div>
               <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Admin Access Required</h1>
-              <p style="color: #64748b; margin-bottom: 24px;">Admin dashboard can only be accessed through Telegram bot.</p>
-              <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
-                <div style="font-weight: 700; margin-bottom: 12px;">📱 For Admins:</div>
-                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
+              <p style="color: #64748b; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">Admin dashboard can only be accessed through Telegram bot.</p>
+              <div style="background: rgba(59, 130, 246, 0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: left; border: 1.5px solid rgba(59, 130, 246, 0.2);">
+                <div style="font-weight: 700; margin-bottom: 12px; color: #0f172a;">📱 For Admins:</div>
+                <div style="color: #475569; font-size: 14px; line-height: 1.8; font-weight: 500;">
                   1. Open bot in <strong>Telegram</strong><br>
                   2. Send <strong>/admin</strong> command<br>
                   3. Tap "Open Admin Dashboard"
@@ -342,6 +457,12 @@
               </div>
             </div>
           </div>
+          <style>
+            @keyframes float {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-12px); }
+            }
+          </style>
         `;
         throw new Error('Not in Telegram WebApp - initData missing');
       }
@@ -352,8 +473,8 @@
     try {
       tg?.ready();
       tg?.expand();
-  tg?.setHeaderColor('#f8fafc');
-      tg?.setBackgroundColor('#f8fafc');
+      tg?.setHeaderColor('#f8fafd');
+      tg?.setBackgroundColor('#f8fafd');
     } catch(e) {}
     
     async function postJSON(url, body) {
@@ -393,24 +514,52 @@
         t.disabled = true;
         window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
         
+        // Add loading animation
+        t.style.opacity = '0.7';
+        const loadingSpinner = document.createElement('span');
+        loadingSpinner.style.cssText = 'display: inline-block; animation: spin 0.8s linear infinite;';
+        loadingSpinner.innerHTML = '⏳';
+        
         if (t.matches('.js-trip-status')) {
           await postJSON(`/admin/api/trip/${t.dataset.tripId}/status`, {
             status: t.dataset.status
           });
-          toast('Status updated successfully', 'success');
-          setTimeout(() => location.reload(), 500);
+          toast('✓ Status updated successfully', 'success');
+          setTimeout(() => location.reload(), 600);
         }
         
         if (t.matches('.js-regen')) {
           await postJSON(`/admin/api/trip/${t.dataset.tripId}/regenerate-links`, {});
-          toast('Links regenerated successfully', 'success');
-          setTimeout(() => location.reload(), 500);
+          toast('✓ Links regenerated successfully', 'success');
+          setTimeout(() => location.reload(), 600);
         }
       } catch(err) {
-        toast(err.message || 'Error occurred', 'error');
+        toast('✗ ' + (err.message || 'Error occurred'), 'error');
         t.disabled = originalDisabled;
+        t.style.opacity = '1';
       }
     });
+    
+    // Add smooth scroll behavior
+    document.querySelectorAll('a[href^="/admin/trip/"]').forEach(link => {
+      link.addEventListener('click', () => {
+        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium');
+      });
+    });
+    
+    // Add style for spinner animation
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-12px); }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
