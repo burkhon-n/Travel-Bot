@@ -83,27 +83,16 @@
       border-radius: 20px;
       padding: 20px;
       margin-bottom: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
       border: 1.5px solid var(--glass-border);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .trip-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .trip-card:active {
-      transform: scale(0.98);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .trip-header {
       display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 16px;
+      flex-direction: column;
       gap: 12px;
+      margin-bottom: 16px;
     }
     
     .trip-name {
@@ -142,15 +131,22 @@
     }
     
     .trip-price {
-      font-size: 16px;
-      font-weight: 700;
+      font-size: 18px;
+      font-weight: 800;
       color: var(--text);
+      padding: 10px 14px;
+      background: rgba(59, 130, 246, 0.08);
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
     }
     
     .trip-price span {
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 500;
+      color: var(--primary);
+      font-size: 18px;
+      font-weight: 800;
     }
     
     .badge {
@@ -191,17 +187,12 @@
     }
     
     .stat-item {
-      background: rgba(59, 130, 246, 0.05);
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(59, 130, 246, 0.1);
+      background: rgba(59, 130, 246, 0.06);
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(59, 130, 246, 0.12);
       transition: all 0.2s;
       backdrop-filter: blur(4px);
-    }
-    
-    .stat-item:hover {
-      background: rgba(59, 130, 246, 0.08);
-      border-color: rgba(59, 130, 246, 0.2);
     }
     
     .stat-label {
@@ -214,83 +205,103 @@
     }
     
     .stat-value {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1.2;
     }
     
     .action-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr;
       gap: 10px;
     }
     
     .btn {
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 14px;
+      min-height: 48px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-size: 15px;
       font-weight: 700;
       border: none;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      letter-spacing: 0.3px;
-      text-transform: capitalize;
-      backdrop-filter: blur(4px);
+      gap: 8px;
+      letter-spacing: 0.2px;
+      backdrop-filter: blur(8px);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
     }
     
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:active::before {
+      width: 300px;
+      height: 300px;
     }
     
     .btn:active {
-      transform: scale(0.96);
+      transform: scale(0.97);
     }
     
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-      color: var(--tg-theme-button-text-color, #fff);
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-      border: 1px solid rgba(59, 130, 246, 0.5);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25), 0 2px 4px rgba(59, 130, 246, 0.15);
     }
     
-    .btn-primary:hover {
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+    .btn-primary:active {
+      box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3), 0 1px 2px rgba(59, 130, 246, 0.2);
     }
     
     .btn-success {
-      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-      border: 1px solid rgba(16, 185, 129, 0.5);
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25), 0 2px 4px rgba(16, 185, 129, 0.15);
     }
     
-    .btn-success:hover {
-      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    .btn-success:active {
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3), 0 1px 2px rgba(16, 185, 129, 0.2);
     }
     
     .btn-danger {
-      background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-      border: 1px solid rgba(239, 68, 68, 0.5);
+      background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25), 0 2px 4px rgba(239, 68, 68, 0.15);
     }
     
-    .btn-danger:hover {
-      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    .btn-danger:active {
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3), 0 1px 2px rgba(239, 68, 68, 0.2);
     }
     
     .btn:disabled {
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .btn:disabled::before {
+      display: none;
     }
     
     .seats-info {
