@@ -263,29 +263,29 @@
   <div class="tab-content active" data-content="all">
     <div class="section-title">All Members ({{ members|length }})</div>
     {% for m in members %}
-    <div class="member-card" data-member-id="{{ m.id }}">
-      <div class="member-avatar">{{ m.name[0]|upper }}</div>
+    <div class="member-card" data-member-id="{{ m['id'] }}">
+      <div class="member-avatar">{{ m['name'][0]|upper }}</div>
       <div class="member-info">
-        <div class="member-name">{{ m.name }}</div>
-        <div class="member-email">{{ m.email }}</div>
+        <div class="member-name">{{ m['name'] }}</div>
+        <div class="member-email">{{ m['email'] }}</div>
         <div class="member-actions">
-          {% if m.has_pending_receipt %}
-          <button class="action-btn action-btn-approve js-approve" data-id="{{ m.id }}">✓ Approve</button>
-          <button class="action-btn action-btn-reject js-reject" data-id="{{ m.id }}">✕ Reject</button>
+          {% if m['has_pending_receipt'] %}
+          <button class="action-btn action-btn-approve js-approve" data-id="{{ m['id'] }}">✓ Approve</button>
+          <button class="action-btn action-btn-reject js-reject" data-id="{{ m['id'] }}">✕ Reject</button>
           {% endif %}
-          <button class="action-btn action-btn-kick js-kick" data-id="{{ m.id }}">Remove</button>
+          <button class="action-btn action-btn-kick js-kick" data-id="{{ m['id'] }}">Remove</button>
         </div>
       </div>
       <div class="member-status">
-        {% if m.payment_status == 'full' %}
+        {% if m['payment_status'] == 'full' %}
         <span class="payment-badge payment-full">FULL PAID</span>
-        {% elif m.payment_status == 'half' %}
+        {% elif m['payment_status'] == 'half' %}
         <span class="payment-badge payment-half">50% PAID</span>
         {% else %}
         <span class="payment-badge payment-pending">PENDING</span>
         {% endif %}
-        {% if m.receipt_url %}
-        <img src="{{ m.receipt_url }}" class="receipt-preview" onclick="window.open('{{ m.receipt_url }}')">
+        {% if m.get('receipt_url') %}
+        <img src="{{ m['receipt_url'] }}" class="receipt-preview" onclick="window.open('{{ m['receipt_url'] }}')">
         {% endif %}
       </div>
     </div>
@@ -300,7 +300,7 @@
 
   <div class="tab-content" data-content="pending">
     <div class="section-title">Pending Approvals</div>
-    {% for m in members if m.has_pending_receipt %}
+    {% for m in members if m['has_pending_receipt'] %}
     <div class="member-card">
       <!-- Same member card structure -->
     </div>
@@ -315,7 +315,7 @@
 
   <div class="tab-content" data-content="paid">
     <div class="section-title">Confirmed Payments</div>
-    {% for m in members if m.payment_status in ['half', 'full'] %}
+    {% for m in members if m['payment_status'] in ['half', 'full'] %}
     <div class="member-card">
       <!-- Same member card structure -->
     </div>
