@@ -1,0 +1,338 @@
+<!-- Unified Liquid Glass Design System -->
+<style>
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+  }
+  
+  :root {
+    /* Modern Color Palette - Inspired by iOS & Material You */
+    --tg-theme-bg-color: #f5f7fa !important;
+    --tg-theme-text-color: #0a0f1e !important;
+    --tg-theme-hint-color: #6b7280 !important;
+    --tg-theme-link-color: #4f46e5 !important;
+    --tg-theme-button-color: #4f46e5 !important;
+    --tg-theme-button-text-color: #ffffff !important;
+    --tg-theme-secondary-bg-color: #f1f5f9 !important;
+    
+    /* Primary Colors - Indigo Spectrum */
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-lighter: #c7d2fe;
+    --primary-dark: #4338ca;
+    
+    /* Accent Colors */
+    --success: #10b981;
+    --success-light: #34d399;
+    --warning: #f59e0b;
+    --warning-light: #fbbf24;
+    --danger: #ef4444;
+    --danger-light: #f87171;
+    --info: #3b82f6;
+    --info-light: #60a5fa;
+    
+    /* Neutrals */
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --text: #0a0f1e;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    
+    /* Liquid Glass Effects */
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-bg-strong: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.25);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-strong: 0 12px 48px rgba(0, 0, 0, 0.12);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    --gradient-info: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    --gradient-bg: linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 50%, #fef3c7 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--gradient-bg);
+    color: var(--tg-theme-text-color, var(--text));
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color-scheme: light;
+    font-feature-settings: 'liga', 'kern';
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Liquid Glass Header */
+  .header {
+    background: var(--gradient-primary);
+    color: var(--tg-theme-button-text-color, #fff);
+    padding: 28px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+  
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+  }
+  
+  .header p, .header .subtitle {
+    font-size: 15px;
+    opacity: 0.92;
+    font-weight: 500;
+    letter-spacing: -0.2px;
+  }
+  
+  .container {
+    padding: 24px 20px;
+    max-width: 100%;
+    padding-bottom: 40px;
+  }
+  
+  /* Liquid Glass Cards */
+  .card, .info-card, .form-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 24px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--glass-shadow);
+    border: 1.5px solid var(--glass-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Liquid Glass Buttons */
+  .btn, .cta-button, button[type="submit"] {
+    min-height: 52px;
+    padding: 16px 24px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: -0.2px;
+    backdrop-filter: blur(10px);
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+  }
+  
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+  
+  .btn:active::before {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .btn:active {
+    transform: scale(0.97);
+  }
+  
+  .btn-primary, .cta-button {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 2px 6px rgba(79, 70, 229, 0.2);
+  }
+  
+  .btn-primary:active, .cta-button:active {
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+  }
+  
+  .btn-success {
+    background: var(--gradient-success);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 2px 6px rgba(16, 185, 129, 0.2);
+  }
+  
+  .btn-success:active {
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  }
+  
+  .btn-danger {
+    background: var(--gradient-danger);
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3), 0 2px 6px rgba(239, 68, 68, 0.2);
+  }
+  
+  .btn-danger:active {
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+  }
+  
+  .btn-secondary {
+    background: var(--glass-bg-strong);
+    color: var(--text);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+  }
+  
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  
+  /* Form Elements */
+  input, textarea, select {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(10px);
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--text);
+    transition: all 0.25s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    background: var(--surface);
+  }
+  
+  label {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+  
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    letter-spacing: 0.2px;
+  }
+  
+  .badge-active, .badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+    border: 1.5px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  .badge-closed, .badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  .badge-cancelled, .badge-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    border: 1.5px solid rgba(245, 158, 11, 0.3);
+  }
+  
+  .badge-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+    border: 1.5px solid rgba(59, 130, 246, 0.3);
+  }
+  
+  /* Animations */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  /* Utility Classes */
+  .text-muted {
+    color: var(--text-muted);
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .mt-4 { margin-top: 16px; }
+  .mb-4 { margin-bottom: 16px; }
+  .p-4 { padding: 16px; }
+  
+  /* Loading State */
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+  }
+  
+  .empty-state-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .empty-state-text {
+    color: var(--text-muted);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+</style>
