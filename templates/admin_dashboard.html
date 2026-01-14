@@ -6,469 +6,243 @@
   <meta name="color-scheme" content="light">
   <title>Admin Dashboard</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  {% include 'shared_styles.html' %}
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      /* Modern Color Palette - Liquid Glass Theme */
-      --tg-theme-bg-color: #f5f7fa !important;
-      --tg-theme-text-color: #0a0f1e !important;
-      --tg-theme-hint-color: #6b7280 !important;
-      --tg-theme-link-color: #4f46e5 !important;
-      --tg-theme-button-color: #4f46e5 !important;
-      --tg-theme-button-text-color: #ffffff !important;
-      --tg-theme-secondary-bg-color: #f1f5f9 !important;
-      
-      --primary: #4f46e5;
-      --primary-light: #818cf8;
-      --success: #10b981;
-      --success-light: #34d399;
-      --danger: #ef4444;
-      --danger-light: #f87171;
-      --bg: #f5f7fa;
-      --text: #0a0f1e;
-      --text-muted: #6b7280;
-      --border: #e5e7eb;
-      --glass-bg: rgba(255, 255, 255, 0.75);
-      --glass-border: rgba(255, 255, 255, 0.25);
-      --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-      --gradient-bg: linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 50%, #fef3c7 100%);
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-      background: var(--gradient-bg);
-      color: var(--tg-theme-text-color, var(--text));
-      min-height: 100vh;
-      padding: 0;
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      color-scheme: light;
-      font-feature-settings: 'liga', 'kern';
-      text-rendering: optimizeLegibility;
-    }
-    
-    .header {
-      background: var(--gradient-primary);
-      color: var(--tg-theme-button-text-color, #fff);
-      padding: 28px 20px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-    }
-    
-    .header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      letter-spacing: -0.8px;
-      line-height: 1.2;
-    }
-    
-    .header p {
-      font-size: 15px;
-      opacity: 0.92;
-      font-weight: 500;
-      letter-spacing: -0.2px;
-    }
-    
-    .container {
-      padding: 24px 20px;
-      max-width: 100%;
-      padding-bottom: 40px;
-    }
-    
-    .trip-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-radius: 24px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1.5px solid var(--glass-border);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .trip-header {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .trip-name {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--tg-theme-text-color, var(--text));
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-      line-height: 1.3;
-    }
-    
-    .trip-name a {
-      color: inherit;
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-    
-    .trip-name a:hover {
-      color: var(--primary);
-    }
-    
-    .trip-meta {
-      display: flex;
-      flex-direction: column;
+    .header-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      margin-top: 16px;
     }
     
-    .group-id {
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
-      font-size: 11px;
-      background: rgba(79, 70, 229, 0.12);
-      padding: 7px 12px;
-      border-radius: 10px;
-      color: var(--primary);
-      display: inline-block;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      backdrop-filter: blur(8px);
-    }
-    
-    .trip-price {
-      font-size: 19px;
-      font-weight: 800;
-      color: var(--text);
-      padding: 12px 16px;
-      background: rgba(79, 70, 229, 0.1);
-      border-radius: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      align-self: flex-start;
-      backdrop-filter: blur(10px);
-      letter-spacing: -0.3px;
-    }
-    
-    .trip-price span {
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-size: 19px;
-      font-weight: 800;
-    }
-    
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 16px;
+    .header-stat {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: capitalize;
-      backdrop-filter: blur(12px);
-      letter-spacing: 0.2px;
-    }
-    
-    .badge-active {
-      background: rgba(16, 185, 129, 0.15);
-      color: #059669;
-      border: 1.5px solid rgba(16, 185, 129, 0.35);
-    }
-    
-    .badge-closed {
-      background: rgba(239, 68, 68, 0.15);
-      color: #dc2626;
-      border: 1.5px solid rgba(239, 68, 68, 0.35);
-    }
-    
-    .badge-cancelled {
-      background: rgba(107, 114, 128, 0.15);
-      color: #4b5563;
-      border: 1.5px solid rgba(107, 114, 128, 0.35);
-    }
-    
-    .trip-stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .stat-item {
-      background: rgba(79, 70, 229, 0.08);
-      padding: 18px;
-      border-radius: 18px;
-      border: 1.5px solid rgba(79, 70, 229, 0.15);
-      transition: all 0.25s;
-      backdrop-filter: blur(12px) saturate(150%);
-    }
-    
-    .stat-label {
-      font-size: 11px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-    
-    .stat-value {
-      font-size: 26px;
-      font-weight: 800;
-      background: var(--gradient-primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.1;
-      letter-spacing: -0.8px;
-    }
-    
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    
-    .btn {
-      min-height: 52px;
-      padding: 16px 20px;
-      border-radius: 16px;
-      font-size: 16px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 12px 8px;
       text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      letter-spacing: -0.2px;
-      backdrop-filter: blur(12px);
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
     
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
+    .header-stat-value {
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
     }
     
-    .btn:active::before {
-      width: 300px;
-      height: 300px;
-    }
-    
-    .btn:active {
-      transform: scale(0.97);
-    }
-    
-    .btn-primary {
-      background: var(--gradient-primary);
-      color: #ffffff;
-      box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3), 0 2px 6px rgba(79, 70, 229, 0.2);
-    }
-    
-    .btn-primary:active {
-      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
-    }
-    
-    .btn-success {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3), 0 2px 6px rgba(16, 185, 129, 0.2);
-    }
-    
-    .btn-success:active {
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
-    }
-    
-    .btn-danger {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3), 0 2px 6px rgba(239, 68, 68, 0.2);
-    }
-    
-    .btn-danger:active {
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-    }
-    
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-    
-    .btn:disabled::before {
-      display: none;
+    .header-stat-label {
+      font-size: 10px;
+      opacity: 0.85;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
     }
     
     .seats-info {
+      background: var(--glass-white-subtle);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+      border: 1px solid var(--glass-border);
       font-size: 14px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(107, 114, 128, 0.1);
-      border: 1.5px solid rgba(107, 114, 128, 0.2);
-      font-weight: 600;
-      backdrop-filter: blur(8px);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: var(--spacing-md);
     }
     
     .seats-info strong {
-      color: var(--text);
+      color: var(--primary);
       font-weight: 700;
     }
     
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(24px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .seats-progress {
+      height: 6px;
+      background: var(--glass-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
     }
     
-    .trip-card {
-      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    .seats-progress-bar {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 3px;
+      transition: width 0.5s var(--ease-spring);
     }
     
-    .trip-card:nth-child(1) { animation-delay: 0.05s; opacity: 0; animation-fill-mode: forwards; }
-    .trip-card:nth-child(2) { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; }
-    .trip-card:nth-child(3) { animation-delay: 0.15s; opacity: 0; animation-fill-mode: forwards; }
-    .trip-card:nth-child(4) { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; }
-    .trip-card:nth-child(n+5) { animation-delay: 0.25s; opacity: 0; animation-fill-mode: forwards; }
-    
-    .loading {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      font-size: 16px;
-      font-weight: 500;
+    .group-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: var(--primary-soft);
+      border-radius: 8px;
+      font-family: 'SF Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--primary);
     }
     
-    .empty-state {
-      text-align: center;
-      padding: 80px 20px;
+    .fab-container {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 50;
     }
     
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
-      opacity: 0.6;
-      animation: float 3s ease-in-out infinite;
+    .fab {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      border: none;
+      box-shadow: 0 8px 32px var(--primary-glow), 0 4px 16px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-spring);
     }
     
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-12px); }
-    }
-    
-    .empty-state-text {
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      font-size: 16px;
-      font-weight: 500;
+    .fab:active {
+      transform: scale(0.9);
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>✈️ Admin Dashboard</h1>
-    <p>Manage trips and members</p>
+  <div class="glass-header-gradient">
+    <h1 class="header-title">✈️ Admin Dashboard</h1>
+    <p class="header-subtitle">Manage your trips and members</p>
+    
+    <div class="header-stats">
+      <div class="header-stat">
+        <div class="header-stat-value">{{ trips|length }}</div>
+        <div class="header-stat-label">Total Trips</div>
+      </div>
+      <div class="header-stat">
+        <div class="header-stat-value">{{ trips|selectattr('status', 'equalto', 'active')|list|length }}</div>
+        <div class="header-stat-label">Active</div>
+      </div>
+      <div class="header-stat">
+        <div class="header-stat-value">{{ trips|sum(attribute='paid') }}</div>
+        <div class="header-stat-label">Total Paid</div>
+      </div>
+    </div>
   </div>
-  
-  <div class="container">
+
+  <div class="card-stack">
     {% for t in trips %}
     <div class="trip-card">
-      <div class="trip-header">
-        <div class="trip-meta">
-          <div class="trip-name">
-            <a href="/admin/trip/{{ t.id }}">{{ t.name }}</a>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <span class="group-id">ID: {{ t.group_id }}</span>
-            <span class="badge badge-{{ t.status }}">{{ t.status }}</span>
-          </div>
-        </div>
-        <div class="trip-price">
+      <div class="flex items-center justify-between mb-sm">
+        <h2 class="card-title">
+          <a href="/admin/trip/{{ t.id }}">{{ t.name }}</a>
+        </h2>
+        <span class="badge badge-{{ t.status }}">{{ t.status }}</span>
+      </div>
+      
+      <div class="flex items-center gap-sm flex-wrap mb-md">
+        <span class="group-chip">
+          <span style="opacity: 0.6">ID:</span> {{ t.group_id }}
+        </span>
+        <div class="price-pill">
           💰 <span>{{ "{:,}".format(t.price) }}</span> UZS
         </div>
       </div>
-      
-      <div class="trip-stats">
-        <div class="stat-item">
-          <div class="stat-label">📝 Registered</div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
           <div class="stat-value">{{ t.registered }}</div>
+          <div class="stat-label">Registered</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">💳 Half Paid</div>
+        <div class="stat-card">
+          <div class="stat-icon">💳</div>
           <div class="stat-value">{{ t.half_paid }}</div>
+          <div class="stat-label">Half Paid</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">✓ Full Paid</div>
+        <div class="stat-card">
+          <div class="stat-icon">✓</div>
           <div class="stat-value">{{ t.full_paid }}</div>
+          <div class="stat-label">Full Paid</div>
         </div>
-        <div class="stat-item">
-          <div class="stat-label">💰 Total Paid</div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
           <div class="stat-value">{{ t.paid }}</div>
+          <div class="stat-label">Total Paid</div>
         </div>
       </div>
-      
+
       {% if t.participant_limit %}
       <div class="seats-info">
-        🪑 <strong>{{ t.seats if t.seats is not none else (t.participant_limit - t.paid) }}</strong> seats available of <strong>{{ t.participant_limit }}</strong>
+        <span>🪑</span>
+        <div style="flex: 1">
+          <div><strong>{{ t.seats if t.seats is not none else (t.participant_limit - t.paid) }}</strong> seats available of <strong>{{ t.participant_limit }}</strong></div>
+          <div class="seats-progress">
+            <div class="seats-progress-bar" style="width: {{ ((t.paid / t.participant_limit) * 100)|round }}%"></div>
+          </div>
+        </div>
       </div>
       {% endif %}
-      
-      <div class="action-grid" style="margin-top: 16px;">
-        <button class="btn btn-success js-trip-status" data-trip-id="{{ t.id }}" data-status="active">✓ Activate</button>
-        <button class="btn btn-primary" onclick="window.location.href='/admin/trip/{{ t.id }}/edit'">✏️ Edit</button>
-        <button class="btn btn-danger js-trip-status" data-trip-id="{{ t.id }}" data-status="cancelled">✕ Cancel</button>
-        <button class="btn btn-primary js-regen" data-trip-id="{{ t.id }}">↻ Links</button>
+
+      <div class="action-grid">
+        <div class="action-row">
+          <button class="btn-glass btn-success js-trip-status" data-trip-id="{{ t.id }}" data-status="active">
+            ✓ Activate
+          </button>
+          <button class="btn-glass btn-danger js-trip-status" data-trip-id="{{ t.id }}" data-status="cancelled">
+            ✕ Cancel
+          </button>
+        </div>
+        <div class="action-row">
+          <button class="btn-glass btn-secondary" onclick="window.location.href='/admin/trip/{{ t.id }}/edit'">
+            ✏️ Edit
+          </button>
+          <button class="btn-glass btn-ghost js-regen" data-trip-id="{{ t.id }}">
+            ↻ Regenerate Links
+          </button>
+        </div>
       </div>
+    </div>
+    {% else %}
+    <div class="glass-panel-elevated empty-state">
+      <div class="empty-icon">🌴</div>
+      <h3 class="empty-title">No trips yet</h3>
+      <p class="empty-text">Create your first trip to start managing group travel!</p>
+      <button class="btn-glass btn-primary mt-md" onclick="window.location.href='/admin/create-trip'">
+        + Create Trip
+      </button>
     </div>
     {% endfor %}
   </div>
 
+  <div class="fab-container">
+    <button class="fab" onclick="window.location.href='/admin/create-trip'">
+      <span style="color: white">+</span>
+    </button>
+  </div>
+
   <script>
-    // Check if running in Telegram WebApp - must be first!
+    // Telegram WebApp Security Check
     (function() {
       const tg = window.Telegram?.WebApp;
-      
-      // Check for initData - this is the definitive proof we're in Telegram
       const hasInitData = tg && tg.initData && tg.initData.length > 0;
       const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
-      
+
       if (!hasInitData && !hasTelegramUser) {
         document.body.innerHTML = `
-          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-            <div style="max-width: 400px; background: white; border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); backdrop-filter: blur(10px);">
+          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(180deg, #E5F0FF 0%, #F2F2F7 30%, #FFF5E6 70%, #F2F2F7 100%);">
+            <div class="glass-panel-elevated" style="max-width: 400px; padding: 40px 30px; text-align: center;">
               <div style="font-size: 64px; margin-bottom: 20px; animation: float 3s ease-in-out infinite;">🔒</div>
-              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Admin Access Required</h1>
-              <p style="color: #64748b; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">Admin dashboard can only be accessed through Telegram bot.</p>
-              <div style="background: rgba(59, 130, 246, 0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: left; border: 1.5px solid rgba(59, 130, 246, 0.2);">
-                <div style="font-weight: 700; margin-bottom: 12px; color: #0f172a;">📱 For Admins:</div>
-                <div style="color: #475569; font-size: 14px; line-height: 1.8; font-weight: 500;">
-                  1. Open bot in <strong>Telegram</strong><br>
-                  2. Send <strong>/admin</strong> command<br>
+              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #1C1C1E;">Admin Access Required</h1>
+              <p style="color: #8E8E93; margin-bottom: 24px; font-size: 15px; line-height: 1.6;">Admin dashboard can only be accessed through Telegram bot.</p>
+              <div style="background: rgba(0, 122, 255, 0.1); border-radius: 16px; padding: 20px; text-align: left; border: 1px solid rgba(0, 122, 255, 0.2);">
+                <div style="font-weight: 700; margin-bottom: 12px; color: #1C1C1E;">📱 For Admins:</div>
+                <div style="color: #8E8E93; font-size: 14px; line-height: 1.8;">
+                  1. Open bot in <strong style="color: #1C1C1E;">Telegram</strong><br>
+                  2. Send <strong style="color: #007AFF;">/admin</strong> command<br>
                   3. Tap "Open Admin Dashboard"
                 </div>
               </div>
@@ -481,19 +255,19 @@
             }
           </style>
         `;
-        throw new Error('Not in Telegram WebApp - initData missing');
+        throw new Error('Not in Telegram WebApp');
       }
     })();
-    
+
     const tg = window.Telegram.WebApp;
     
     try {
       tg?.ready();
       tg?.expand();
-      tg?.setHeaderColor('#4f46e5');
-      tg?.setBackgroundColor('#f5f7fa');
+      tg?.setHeaderColor('#007AFF');
+      tg?.setBackgroundColor('#F2F2F7');
     } catch(e) {}
-    
+
     async function postJSON(url, body) {
       const r = await fetch(url, {
         method: 'POST',
@@ -506,77 +280,43 @@
       
       if (!r.ok) {
         let m = 'Request failed';
-        try {
-          const d = await r.json();
-          m = d.detail || m;
-        } catch {}
+        try { const d = await r.json(); m = d.detail || m; } catch {}
         throw new Error(m);
       }
       return r.json();
     }
-    
+
     function toast(m, type) {
-      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(type === 'error' ? 'error' : 'success');
-      window.Telegram?.WebApp?.showAlert(m);
+      tg?.HapticFeedback?.notificationOccurred(type === 'error' ? 'error' : 'success');
+      tg?.showAlert(m);
     }
-    
+
     document.addEventListener('click', async e => {
       const t = e.target.closest('button');
       if (!t) return;
-      
-      const originalText = t.textContent;
-      const originalDisabled = t.disabled;
-      
+
       try {
         t.disabled = true;
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
-        
-        // Add loading animation
-        t.style.opacity = '0.7';
-        const loadingSpinner = document.createElement('span');
-        loadingSpinner.style.cssText = 'display: inline-block; animation: spin 0.8s linear infinite;';
-        loadingSpinner.innerHTML = '⏳';
-        
+        t.style.opacity = '0.6';
+        tg?.HapticFeedback?.impactOccurred('light');
+
         if (t.matches('.js-trip-status')) {
-          await postJSON(`/admin/api/trip/${t.dataset.tripId}/status`, {
-            status: t.dataset.status
-          });
-          toast('✓ Status updated successfully', 'success');
-          setTimeout(() => location.reload(), 600);
+          await postJSON(`/admin/api/trip/${t.dataset.tripId}/status`, { status: t.dataset.status });
+          toast('✓ Status updated', 'success');
+          setTimeout(() => location.reload(), 500);
         }
-        
+
         if (t.matches('.js-regen')) {
           await postJSON(`/admin/api/trip/${t.dataset.tripId}/regenerate-links`, {});
-          toast('✓ Links regenerated successfully', 'success');
-          setTimeout(() => location.reload(), 600);
+          toast('✓ Links regenerated', 'success');
+          setTimeout(() => location.reload(), 500);
         }
       } catch(err) {
-        toast('✗ ' + (err.message || 'Error occurred'), 'error');
-        t.disabled = originalDisabled;
+        toast('✗ ' + (err.message || 'Error'), 'error');
+        t.disabled = false;
         t.style.opacity = '1';
       }
     });
-    
-    // Add smooth scroll behavior
-    document.querySelectorAll('a[href^="/admin/trip/"]').forEach(link => {
-      link.addEventListener('click', () => {
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium');
-      });
-    });
-    
-    // Add style for spinner animation
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
-      }
-    `;
-    document.head.appendChild(style);
   </script>
 </body>
 </html>
