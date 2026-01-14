@@ -4,667 +4,387 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="color-scheme" content="light">
-  <title>{{ trip.name }}</title>
+  <title>{{ trip.name }} - Admin</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  {% include 'shared_styles.html' %}
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      /* Force light theme regardless of Telegram or OS theme */
-      --tg-theme-bg-color: #ffffff !important;
-      --tg-theme-text-color: #0f172a !important;
-      --tg-theme-hint-color: #64748b !important;
-      --tg-theme-link-color: #2563eb !important;
-      --tg-theme-button-color: #2563eb !important;
-      --tg-theme-button-text-color: #ffffff !important;
-      --tg-theme-secondary-bg-color: #f1f5f9 !important;
-      
-      --primary: #2563eb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--tg-theme-bg-color, var(--bg));
-      color: var(--tg-theme-text-color, var(--text));
-      min-height: 100vh;
-      padding: 0;
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-      color-scheme: light;
-    }
-    
-    .header {
-      background: var(--tg-theme-button-color, var(--primary));
-      color: var(--tg-theme-button-text-color, #fff);
-      padding: 20px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    
-    .header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    
-    .header-subtitle {
-      font-size: 13px;
-      opacity: 0.85;
-    }
-    
-    .container {
-      padding: 16px;
-    }
-    
-    .info-card {
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
-    }
-    
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    
-    .info-row:last-child {
-      border-bottom: none;
-    }
-    
-    .info-label {
-      font-size: 13px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      font-weight: 500;
-    }
-    
-    .info-value {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--tg-theme-text-color, var(--text));
-      text-align: right;
-    }
-    
-    .info-value a {
-      color: var(--tg-theme-link-color, var(--primary));
-      text-decoration: none;
+    .back-btn {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-    }
-    
-    .code {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 12px;
-      background: var(--tg-theme-bg-color, #f1f5f9);
-      padding: 4px 8px;
-      border-radius: 6px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-    }
-    
-    .action-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .btn {
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 6px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      margin-bottom: 8px;
+      transition: opacity 0.2s;
     }
     
-    .btn:active {
-      transform: scale(0.96);
+    .back-btn:active {
+      opacity: 0.7;
     }
     
-    .btn-primary {
-      background: var(--tg-theme-button-color, var(--primary));
-      color: var(--tg-theme-button-text-color, #fff);
-    }
-    
-    .btn-secondary {
-      background: var(--tg-theme-secondary-bg-color, #f1f5f9);
-      color: var(--tg-theme-text-color, var(--text));
-      border: 1px solid var(--border);
-    }
-    
-    .btn-success {
-      background: var(--success);
-      color: #fff;
-    }
-    
-    .btn-warning {
-      background: var(--warning);
-      color: #fff;
-    }
-    
-    .btn-danger {
-      background: var(--danger);
-      color: #fff;
-    }
-    
-    .btn-excel {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-      color: #fff;
+    .trip-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
       font-weight: 700;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-    
-    .btn-excel:active {
-      transform: scale(0.96);
-      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      margin-top: 8px;
     }
     
     .section-title {
-      font-size: 17px;
+      font-size: 13px;
       font-weight: 700;
-      margin: 24px 0 12px;
-      color: var(--tg-theme-text-color, var(--text));
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: var(--spacing-sm);
+      padding: 0 var(--spacing-xs);
     }
     
     .member-card {
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border);
-      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      padding: var(--spacing-md);
+      background: var(--glass-white-strong);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      margin-bottom: var(--spacing-sm);
+      transition: all 0.2s;
     }
     
     .member-card:active {
       transform: scale(0.98);
+      background: var(--glass-white);
     }
     
-    .member-header {
+    .member-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      margin-right: var(--spacing-md);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--primary-glow);
     }
     
-    .member-id {
-      font-size: 12px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
+    .member-info {
+      flex: 1;
+      min-width: 0;
     }
     
-    .member-user {
-      font-size: 15px;
+    .member-name {
+      font-size: 16px;
       font-weight: 600;
-      color: var(--tg-theme-text-color, var(--text));
-      margin-bottom: 4px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
-    .badge {
-      display: inline-flex;
-      align-items: center;
+    .member-email {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    
+    .member-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    
+    .payment-badge {
       padding: 4px 10px;
       border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
     }
     
-    .badge-not_paid {
-      background: #fee2e2;
-      color: #991b1b;
+    .payment-full {
+      background: var(--success-soft);
+      color: var(--success);
     }
     
-    .badge-half_paid {
-      background: #fef3c7;
-      color: #92400e;
+    .payment-half {
+      background: var(--warning-soft);
+      color: var(--warning);
     }
     
-    .badge-full_paid {
-      background: #d1fae5;
-      color: #065f46;
-    }
-    
-    .receipt-link {
-      font-size: 13px;
-      color: var(--tg-theme-link-color, var(--primary));
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 10px;
+    .payment-pending {
+      background: rgba(142, 142, 147, 0.15);
+      color: var(--text-secondary);
     }
     
     .member-actions {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
     }
     
-    .btn-sm {
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 8px;
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-    }
-    
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      opacity: 0.5;
-    }
-    
-    .empty-state-text {
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      font-size: 15px;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .member-card {
-      animation: fadeIn 0.3s ease-out;
-    }
-    
-    .badge-status {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 12px;
+    .action-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
-      text-transform: capitalize;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
     }
     
-    .badge-status.active {
-      background: #d1fae5;
-      color: #065f46;
+    .action-btn-approve {
+      background: var(--success-soft);
+      color: var(--success);
     }
     
-    .badge-status.closed {
-      background: #fee2e2;
-      color: #991b1b;
+    .action-btn-reject {
+      background: var(--danger-soft);
+      color: var(--danger);
     }
     
-    .badge-status.cancelled {
-      background: #f3f4f6;
-      color: #374151;
+    .action-btn-kick {
+      background: rgba(142, 142, 147, 0.15);
+      color: var(--text-secondary);
     }
-    /* Utility text colors for dynamic status */
-    .text-danger { color: var(--danger); }
-    .text-warning { color: var(--warning); }
-    .text-success { color: var(--success); }
+    
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .receipt-preview {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--glass-border);
+      cursor: pointer;
+    }
+    
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--glass-white-subtle);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin: var(--spacing-md);
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab-btn.active {
+      background: white;
+      color: var(--text-primary);
+      box-shadow: var(--glass-shadow);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 0 var(--spacing-md) var(--spacing-md);
+    }
+    
+    .tab-content.active {
+      display: block;
+      animation: fade-in 0.3s;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>{{ trip.name }}</h1>
-    <div class="header-subtitle">Trip Management</div>
+  <div class="glass-header-gradient">
+    <a href="/admin" class="back-btn">← Back to Dashboard</a>
+    <h1 class="header-title">{{ trip.name }}</h1>
+    <span class="trip-status-badge">
+      <span style="font-size: 8px;">●</span> {{ trip.status }}
+    </span>
   </div>
-  
-  <div class="container">
-    <!-- Trip Info Card -->
-    <div class="info-card">
-      <div class="info-row">
-        <span class="info-label">Group ID</span>
-        <span class="info-value"><span class="code">{{ trip.group_id }}</span></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Status</span>
-        <span class="info-value"><span class="badge-status {{ trip.status }}">{{ trip.status }}</span></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">💰 Price</span>
-        <span class="info-value"><strong>{{ "{:,}".format(trip.price if trip.price is not none else 0) }} UZS</strong></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Participant Limit</span>
-        <span class="info-value">{% if trip.participant_limit is not none %}{{ trip.participant_limit }}{% else %}Unlimited{% endif %}</span>
-      </div>
+
+  <div class="stats-grid" style="padding: var(--spacing-md);">
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-value">{{ stats.registered }}</div>
+      <div class="stat-label">Registered</div>
     </div>
-    
-    <!-- Statistics Card -->
-    <div class="info-card" style="margin-top: 12px;">
-      <div class="info-row">
-        <span class="info-label">📝 Registered</span>
-        <span class="info-value"><strong>{{ stats.registered }}</strong></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">🟡 Half Paid</span>
-        <span class="info-value"><strong>{{ stats.half_paid }}</strong></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">✅ Full Paid</span>
-        <span class="info-value"><strong>{{ stats.full_paid }}</strong></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">💵 Total Paid</span>
-        <span class="info-value"><strong style="color: var(--success);">{{ stats.total_paid }}</strong></span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">🪑 Seats Available</span>
-        <span class="info-value">
-          {% set _seats_class = 'text-danger' if stats.seats_available == 0 else ('text-warning' if stats.seats_available is not none and stats.seats_available < 10 else 'text-success') %}
-          <strong class="{{ _seats_class }}">
-            {% if stats.seats_available is not none %}{{ stats.seats_available }} of {{ trip.participant_limit }}{% else %}Unlimited{% endif %}
-          </strong>
-        </span>
-      </div>
+    <div class="stat-card">
+      <div class="stat-icon">💳</div>
+      <div class="stat-value">{{ stats.half_paid }}</div>
+      <div class="stat-label">Half Paid</div>
     </div>
-    
-    <!-- Links Card -->
-    <div class="info-card" style="margin-top: 12px;">
-      <div class="info-row">
-        <span class="info-label">👥 Participant Link</span>
-        <span class="info-value">
-          {% if trip.participant_invite_link %}
-            <a href="{{ trip.participant_invite_link }}">Open →</a>
-          {% else %}
-            -
-          {% endif %}
-        </span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">👤 Guest Link</span>
-        <span class="info-value">
-          {% if trip.guest_invite_link %}
-            <a href="{{ trip.guest_invite_link }}">Open →</a>
-          {% else %}
-            -
-          {% endif %}
-        </span>
-      </div>
+    <div class="stat-card">
+      <div class="stat-icon">✓</div>
+      <div class="stat-value">{{ stats.full_paid }}</div>
+      <div class="stat-label">Full Paid</div>
     </div>
-    
-    <!-- Trip Actions -->
-    <div class="action-grid">
-      <button class="btn btn-success js-trip-status" data-trip-id="{{ trip.id }}" data-status="active">
-        ✓ Activate
-      </button>
-      <button class="btn btn-primary" onclick="openEditPage()">
-        ✏️ Edit
-      </button>
-      <button class="btn btn-danger js-trip-status" data-trip-id="{{ trip.id }}" data-status="cancelled">
-        ✕ Cancel
-      </button>
-      <button class="btn btn-primary js-regen" data-trip-id="{{ trip.id }}">
-        ↻ Links
-      </button>
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-value">{{ stats.pending_receipts }}</div>
+      <div class="stat-label">Pending</div>
     </div>
-    
-    <!-- Export Actions -->
-    <div style="margin-top: 12px;">
-      <button class="btn btn-excel" onclick="downloadExcel()" style="width: 100%;">
-        📥 Download Excel Report
-      </button>
-    </div>
-    
-    <!-- Members Section -->
-    <div class="section-title">
-      👥 Members <span style="color: var(--text-muted); font-weight: 500; font-size: 14px;">({{ members|length }})</span>
-    </div>
-    
-    {% if members %}
-      {% for m in members %}
-      <div class="member-card">
-        <div class="member-header">
-          <div>
-            <div class="member-user">{{ m.full_name }}</div>
-            <div class="member-id">TG ID: {{ m.telegram_id }}</div>
-          </div>
-          <span class="badge badge-{{ m.payment_status }}">
-            {% if m.payment_status == 'not_paid' %}Not Paid{% endif %}
-            {% if m.payment_status == 'half_paid' %}Half Paid{% endif %}
-            {% if m.payment_status == 'full_paid' %}Full Paid{% endif %}
-          </span>
-        </div>
-        
-        {% if m.payment_receipt_link %}
-        <a href="{{ m.payment_receipt_link }}" class="receipt-link">
-          📄 View Receipt →
-        </a>
-        {% endif %}
-        
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="all">All Members</button>
+    <button class="tab-btn" data-tab="pending">Pending</button>
+    <button class="tab-btn" data-tab="paid">Paid</button>
+  </div>
+
+  <div class="tab-content active" data-content="all">
+    <div class="section-title">All Members ({{ members|length }})</div>
+    {% for m in members %}
+    <div class="member-card" data-member-id="{{ m.id }}">
+      <div class="member-avatar">{{ m.name[0]|upper }}</div>
+      <div class="member-info">
+        <div class="member-name">{{ m.name }}</div>
+        <div class="member-email">{{ m.email }}</div>
         <div class="member-actions">
-          <button class="btn btn-secondary btn-sm js-member-status" data-member-id="{{ m.id }}" data-status="not_paid">
-            Not
-          </button>
-          <button class="btn btn-secondary btn-sm js-member-status" data-member-id="{{ m.id }}" data-status="half_paid">
-            Half
-          </button>
-          <button class="btn btn-secondary btn-sm js-member-status" data-member-id="{{ m.id }}" data-status="full_paid">
-            Full
-          </button>
+          {% if m.has_pending_receipt %}
+          <button class="action-btn action-btn-approve js-approve" data-id="{{ m.id }}">✓ Approve</button>
+          <button class="action-btn action-btn-reject js-reject" data-id="{{ m.id }}">✕ Reject</button>
+          {% endif %}
+          <button class="action-btn action-btn-kick js-kick" data-id="{{ m.id }}">Remove</button>
         </div>
       </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-state-icon">👥</div>
-        <div class="empty-state-text">No members yet</div>
+      <div class="member-status">
+        {% if m.payment_status == 'full' %}
+        <span class="payment-badge payment-full">FULL PAID</span>
+        {% elif m.payment_status == 'half' %}
+        <span class="payment-badge payment-half">50% PAID</span>
+        {% else %}
+        <span class="payment-badge payment-pending">PENDING</span>
+        {% endif %}
+        {% if m.receipt_url %}
+        <img src="{{ m.receipt_url }}" class="receipt-preview" onclick="window.open('{{ m.receipt_url }}')">
+        {% endif %}
       </div>
-    {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3 class="empty-title">No members yet</h3>
+      <p class="empty-text">Share the trip link to start getting registrations</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="tab-content" data-content="pending">
+    <div class="section-title">Pending Approvals</div>
+    {% for m in members if m.has_pending_receipt %}
+    <div class="member-card">
+      <!-- Same member card structure -->
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">✓</div>
+      <h3 class="empty-title">All caught up!</h3>
+      <p class="empty-text">No pending receipts to review</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="tab-content" data-content="paid">
+    <div class="section-title">Confirmed Payments</div>
+    {% for m in members if m.payment_status in ['half', 'full'] %}
+    <div class="member-card">
+      <!-- Same member card structure -->
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">💳</div>
+      <h3 class="empty-title">No payments yet</h3>
+      <p class="empty-text">Approved payments will appear here</p>
+    </div>
+    {% endfor %}
   </div>
 
   <script>
-    // Check if running in Telegram WebApp - must be first!
-    (function() {
-      const tg = window.Telegram?.WebApp;
-      
-      // Check for initData - this is the definitive proof we're in Telegram
-      const hasInitData = tg && tg.initData && tg.initData.length > 0;
-      const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
-      
-      if (!hasInitData && !hasTelegramUser) {
-        document.body.innerHTML = `
-          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-            <div style="max-width: 400px; background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
-              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
-              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Admin Access Required</h1>
-              <p style="color: #64748b; margin-bottom: 24px;">Trip management can only be accessed through Telegram bot.</p>
-              <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
-                <div style="font-weight: 700; margin-bottom: 12px;">📱 For Admins:</div>
-                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
-                  1. Open bot in <strong>Telegram</strong><br>
-                  2. Send <strong>/admin</strong> command<br>
-                  3. Tap "Manage Trips"
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        throw new Error('Not in Telegram WebApp - initData missing');
-      }
-    })();
+    const tg = window.Telegram?.WebApp;
+    tg?.ready();
+    tg?.expand();
+    tg?.setHeaderColor('#007AFF');
     
-    const tg = window.Telegram.WebApp;
-    
-    try {
-      tg?.ready();
-      tg?.expand();
-  tg?.setHeaderColor('#f8fafc');
-      tg?.setBackgroundColor('#f8fafc');
-    } catch(e) {}
-    
-    async function postJSON(url, body) {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Telegram-Id': (window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 0)
-        },
-        body: JSON.stringify(body || {})
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        document.querySelector(`[data-content="${btn.dataset.tab}"]`).classList.add('active');
+        
+        tg?.HapticFeedback?.selectionChanged();
       });
-      
-      if (!r.ok) {
-        let m = 'Request failed';
-        try {
-          const d = await r.json();
-          m = d.detail || m;
-        } catch {}
-        throw new Error(m);
-      }
-      return r.json();
-    }
-    
-    function toast(m, type) {
-      window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred(type === 'error' ? 'error' : 'success');
-      window.Telegram?.WebApp?.showAlert(m);
-    }
-    
-    document.addEventListener('click', async e => {
-      const t = e.target.closest('button');
-      if (!t) return;
-      
-      const originalText = t.textContent;
-      const originalDisabled = t.disabled;
-      
-      try {
-        t.disabled = true;
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
-        
-        console.log('Button clicked:', t.className, t.dataset);
-        
-        if (t.matches('.js-trip-status')) {
-          console.log('Updating trip status...');
-          await postJSON(`/admin/api/trip/${t.dataset.tripId}/status`, {
-            status: t.dataset.status
-          });
-          toast('Status updated successfully', 'success');
-          setTimeout(() => location.reload(), 500);
-        }
-        
-        if (t.matches('.js-regen')) {
-          console.log('Regenerating links...');
-          await postJSON(`/admin/api/invite-links/${t.dataset.tripId}/regenerate`, {});
-          toast('Links regenerated successfully', 'success');
-          setTimeout(() => location.reload(), 500);
-        }
-        
-        if (t.matches('.js-member-status')) {
-          console.log('Updating member status...');
-          
-          // Get status text for confirmation
-          const statusMap = {
-            'not_paid': 'Not Paid',
-            'half_paid': 'Half Paid (50%)',
-            'full_paid': 'Full Paid (100%)'
-          };
-          const newStatus = t.dataset.status;
-          const statusText = statusMap[newStatus] || newStatus;
-          
-          // Get member name from the card
-          const memberCard = t.closest('.member-card');
-          const memberName = memberCard?.querySelector('.member-user')?.textContent || 'this member';
-          
-          // Use Telegram's confirmation dialog
-          const shouldUpdate = await new Promise((resolve) => {
-            window.Telegram?.WebApp?.showConfirm(
-              `Change ${memberName}'s payment status to "${statusText}"?\n\n⚠️ This will update their access and notifications.`,
-              (confirmed) => resolve(confirmed)
-            );
-          });
-          
-          if (!shouldUpdate) {
-            window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('warning');
-            return;
-          }
-          
-          await postJSON(`/admin/api/member/${t.dataset.memberId}/status`, {
-            status: newStatus
-          });
-          toast('Payment status updated', 'success');
-          setTimeout(() => location.reload(), 500);
-        }
-      } catch(err) {
-        console.error('Error:', err);
-        toast(err.message || 'Error occurred', 'error');
-        t.disabled = originalDisabled;
-      }
     });
     
-    // Open edit page
-    function openEditPage() {
-      const editUrl = `/admin/trip/{{ trip.id }}/edit`;
-      window.location.href = editUrl;
-    }
-    
-    // Download Excel function
-    async function downloadExcel() {
+    // Action handlers
+    async function handleAction(url, successMsg) {
       try {
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium');
-        
-        const tg = window.Telegram?.WebApp;
-        const tgUserId = tg?.initDataUnsafe?.user?.id;
-        
-        if (!tgUserId) {
-          toast('Telegram user ID not available', 'error');
-          return;
-        }
-        
-        const response = await fetch(`/admin/api/trip/{{ trip.id }}/export-excel?send_to_chat=true`, {
-          method: 'GET',
+        const r = await fetch(url, {
+          method: 'POST',
           headers: {
-            'X-Telegram-Id': tgUserId.toString()
+            'Content-Type': 'application/json',
+            'X-Telegram-Id': (tg?.initDataUnsafe?.user?.id || 0)
           }
         });
-        
-        if (!response.ok) {
-          throw new Error('Failed to generate Excel file');
-        }
-        
-        // Get filename from Content-Disposition header
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = 'trip_members.xlsx';
-        if (contentDisposition) {
-          const matches = /filename=(.+)/.exec(contentDisposition);
-          if (matches) filename = matches[1];
-        }
-        
-        // Download the file
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success');
-        toast('Excel file downloaded and sent to chat!', 'success');
-      } catch (err) {
-        console.error('Error downloading Excel:', err);
-        toast('Failed to download Excel file', 'error');
+        if (!r.ok) throw new Error('Failed');
+        tg?.HapticFeedback?.notificationOccurred('success');
+        tg?.showAlert(successMsg);
+        setTimeout(() => location.reload(), 500);
+      } catch(e) {
+        tg?.HapticFeedback?.notificationOccurred('error');
+        tg?.showAlert('Error: ' + e.message);
       }
     }
+    
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      
+      const memberId = btn.dataset.id;
+      
+      if (btn.classList.contains('js-approve')) {
+        handleAction(`/admin/api/member/${memberId}/approve`, '✓ Payment approved');
+      }
+      if (btn.classList.contains('js-reject')) {
+        handleAction(`/admin/api/member/${memberId}/reject`, 'Receipt rejected');
+      }
+      if (btn.classList.contains('js-kick')) {
+        tg?.showConfirm('Remove this member from the trip?', (ok) => {
+          if (ok) handleAction(`/admin/api/member/${memberId}/kick`, 'Member removed');
+        });
+      }
+    });
   </script>
 </body>
 </html>

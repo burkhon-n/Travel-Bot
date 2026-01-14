@@ -4,392 +4,253 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="color-scheme" content="light">
-  <title>Trip Statistics</title>
+  <title>{{ trip.name }} - Statistics</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  {% include 'shared_styles.html' %}
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      /* Force light theme */
-      --tg-theme-bg-color: #ffffff !important;
-      --tg-theme-text-color: #0f172a !important;
-      --tg-theme-hint-color: #64748b !important;
-      --tg-theme-link-color: #2563eb !important;
-      --tg-theme-button-color: #2563eb !important;
-      --tg-theme-button-text-color: #ffffff !important;
-      --tg-theme-secondary-bg-color: #f1f5f9 !important;
-      
-      --primary: #2563eb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--tg-theme-bg-color, var(--bg));
-      color: var(--tg-theme-text-color, var(--text));
-      min-height: 100vh;
-      padding: 0;
-      margin: 0;
-      -webkit-font-smoothing: antialiased;
-      color-scheme: light;
-    }
-    
-    .header {
-      background: var(--tg-theme-button-color, var(--primary));
-      color: var(--tg-theme-button-text-color, #fff);
-      padding: 20px 16px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    
-    .header h1 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    
-    .header p {
-      font-size: 13px;
-      opacity: 0.85;
-    }
-    
-    .container {
-      padding: 16px;
-      max-width: 640px;
-      margin: 0 auto;
-    }
-    
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .stat-card {
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 16px;
-      padding: 20px;
+    .hero-stats {
+      padding: 24px 20px;
       text-align: center;
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s;
     }
     
-    .stat-card:active {
-      transform: scale(0.98);
-    }
-    
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary) 0%, var(--success) 100%);
-      opacity: 0.6;
-    }
-    
-    .stat-label {
-      font-size: 12px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-    
-    .stat-value {
-      font-size: 32px;
+    .hero-number {
+      font-size: 64px;
       font-weight: 800;
-      color: var(--tg-theme-text-color, var(--text));
-      line-height: 1;
-    }
-    
-    .stat-card.highlight .stat-value {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);
+      background: var(--primary-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      line-height: 1;
+      letter-spacing: -3px;
     }
     
-    .capacity-section {
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
+    .hero-label {
+      font-size: 18px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: 8px;
     }
     
-    .capacity-header {
+    .progress-ring {
+      width: 200px;
+      height: 200px;
+      margin: 24px auto;
+      position: relative;
+    }
+    
+    .progress-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    
+    .progress-ring-bg {
+      fill: none;
+      stroke: var(--glass-border);
+      stroke-width: 12;
+    }
+    
+    .progress-ring-fill {
+      fill: none;
+      stroke: url(#progressGradient);
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 565;
+      stroke-dashoffset: 565;
+      transition: stroke-dashoffset 1s var(--ease-spring);
+    }
+    
+    .progress-ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .progress-percent {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -2px;
+    }
+    
+    .progress-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    
+    .stat-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--glass-border);
     }
     
-    .capacity-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--tg-theme-text-color, var(--text));
+    .stat-row:last-child { border-bottom: none; }
+    
+    .stat-row-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      color: var(--text-primary);
     }
     
-    .capacity-value {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--tg-theme-text-color, var(--text));
-    }
-    
-    .progress-bar {
-      height: 12px;
-      border-radius: 999px;
-      background: var(--tg-theme-bg-color, #f1f5f9);
-      border: 2px solid var(--border);
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--success) 0%, #34d399 100%);
-      border-radius: 999px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmer 2s infinite;
-    }
-    
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-    
-    .capacity-note {
-      margin-top: 12px;
-      padding: 12px;
-      background: var(--tg-theme-bg-color, #fff);
-      border-radius: 10px;
-      font-size: 13px;
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      line-height: 1.5;
-      border: 1px dashed var(--border);
-    }
-    
-    .info-box {
-      background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-      border: 1px solid rgba(37, 99, 235, 0.2);
+    .stat-row-icon {
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      font-size: 13px;
-      color: var(--primary);
-      line-height: 1.6;
-    }
-    
-    .btn {
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--tg-theme-button-text-color, #fff);
-      background: linear-gradient(135deg, var(--tg-theme-button-color, var(--primary)) 0%, #1d4ed8 100%);
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      font-size: 20px;
     }
     
-    .btn:active {
-      transform: scale(0.96);
+    .stat-row-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
     }
     
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      background: var(--tg-theme-secondary-bg-color, var(--surface));
-      border-radius: 16px;
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
+    .icon-primary { background: var(--primary-soft); }
+    .icon-success { background: var(--success-soft); }
+    .icon-warning { background: var(--warning-soft); }
+    .icon-danger { background: var(--danger-soft); }
+    
+    .money-card {
+      background: var(--primary-gradient);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      color: white;
+      margin: var(--spacing-md);
+      box-shadow: 0 12px 40px var(--primary-glow);
     }
     
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 12px;
-      opacity: 0.5;
+    .money-label {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-bottom: 4px;
     }
     
-    .empty-state-text {
-      color: var(--tg-theme-hint-color, var(--text-muted));
-      font-size: 15px;
+    .money-value {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
     }
     
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .money-subtext {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 8px;
     }
-    
-    .stat-card,
-    .capacity-section {
-      animation: fadeIn 0.4s ease-out backwards;
-    }
-    
-    .stat-card:nth-child(1) { animation-delay: 0.05s; }
-    .stat-card:nth-child(2) { animation-delay: 0.1s; }
-    .stat-card:nth-child(3) { animation-delay: 0.15s; }
-    .stat-card:nth-child(4) { animation-delay: 0.2s; }
-    .capacity-section { animation-delay: 0.25s; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>📊 {{ trip_name }}</h1>
-    <p style="font-size: 15px; font-weight: 600; color: var(--primary); margin-top: 8px;">💰 {{ "{:,}".format(price) }} UZS</p>
-    <p>Overview of registrations and payments</p>
+  <div class="glass-header-gradient">
+    <h1 class="header-title">{{ trip.name }}</h1>
+    <p class="header-subtitle">Trip Statistics</p>
   </div>
-  
-  <div class="container">
-    <div class="info-box">
-      ℹ️ Seats are counted only by fully paid participants
+
+  <div class="hero-stats">
+    <div class="progress-ring">
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#007AFF" />
+            <stop offset="100%" stop-color="#5856D6" />
+          </linearGradient>
+        </defs>
+        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+        <circle class="progress-ring-fill" cx="100" cy="100" r="90" id="progressCircle" />
+      </svg>
+      <div class="progress-ring-center">
+        <div class="progress-percent" id="progressPercent">0%</div>
+        <div class="progress-label">Capacity Filled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="money-card">
+    <div class="money-label">💰 Total Revenue</div>
+    <div class="money-value">{{ "{:,}".format(stats.total_revenue) }} UZS</div>
+    <div class="money-subtext">From {{ stats.paid }} confirmed payments</div>
+  </div>
+
+  <div class="glass-panel" style="margin: var(--spacing-md); padding: var(--spacing-md);">
+    <div class="stat-row">
+      <div class="stat-row-label">
+        <span class="stat-row-icon icon-primary">📝</span>
+        <span>Registered</span>
+      </div>
+      <span class="stat-row-value">{{ stats.registered }}</span>
     </div>
     
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Registered</div>
-        <div class="stat-value">{{ total_registered }}</div>
+    <div class="stat-row">
+      <div class="stat-row-label">
+        <span class="stat-row-icon icon-warning">💳</span>
+        <span>Half Paid (50%)</span>
       </div>
-      
-      <div class="stat-card">
-        <div class="stat-label">Half Paid</div>
-        <div class="stat-value">{{ half_paid }}</div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-label">Full Paid</div>
-        <div class="stat-value">{{ full_paid }}</div>
-      </div>
-      
-      <div class="stat-card highlight">
-        <div class="stat-label">Paid (Seats)</div>
-        <div class="stat-value">{{ paid_count }}</div>
-      </div>
+      <span class="stat-row-value">{{ stats.half_paid }}</span>
     </div>
     
-    {% if participant_limit %}
-    <div class="capacity-section">
-      <div class="capacity-header">
-        <span class="capacity-label">🎫 Available Seats</span>
-        <span class="capacity-value">{{ participant_limit - paid_count }} / {{ participant_limit }}</span>
+    <div class="stat-row">
+      <div class="stat-row-label">
+        <span class="stat-row-icon icon-success">✓</span>
+        <span>Full Paid</span>
       </div>
-      
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" data-paid="{{ paid_count }}" data-limit="{{ participant_limit or 0 }}"></div>
-      </div>
-      
-      <div class="capacity-note">
-        💡 Both half-paid and fully-paid participants occupy seats and count toward the seat limit.
-      </div>
+      <span class="stat-row-value">{{ stats.full_paid }}</span>
     </div>
-    {% else %}
-    <div class="empty-state">
-      <div class="empty-state-icon">∞</div>
-      <div class="empty-state-text">No participant limit set for this trip</div>
+    
+    <div class="stat-row">
+      <div class="stat-row-label">
+        <span class="stat-row-icon icon-danger">⏳</span>
+        <span>Pending Receipts</span>
+      </div>
+      <span class="stat-row-value">{{ stats.pending_receipts }}</span>
+    </div>
+    
+    {% if trip.participant_limit %}
+    <div class="stat-row">
+      <div class="stat-row-label">
+        <span class="stat-row-icon" style="background: rgba(142, 142, 147, 0.15);">🪑</span>
+        <span>Seats Remaining</span>
+      </div>
+      <span class="stat-row-value">{{ trip.participant_limit - stats.paid }}</span>
     </div>
     {% endif %}
-    
-    <button class="btn" onclick="closeApp()">
+  </div>
+
+  <div style="padding: var(--spacing-md);">
+    <button class="btn-glass btn-secondary btn-block" onclick="window.Telegram?.WebApp?.close()">
       Close
     </button>
   </div>
-  
-  <script>
-    // Check if running in Telegram WebApp - must be first!
-    (function() {
-      const tg = window.Telegram?.WebApp;
-      
-      // Check for initData - this is the definitive proof we're in Telegram
-      const hasInitData = tg && tg.initData && tg.initData.length > 0;
-      const hasTelegramUser = tg?.initDataUnsafe?.user?.id;
-      
-      if (!hasInitData && !hasTelegramUser) {
-        document.body.innerHTML = `
-          <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-            <div style="max-width: 400px; background: white; border-radius: 20px; padding: 40px 30px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
-              <div style="font-size: 64px; margin-bottom: 20px;">🔒</div>
-              <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #0f172a;">Telegram Required</h1>
-              <p style="color: #64748b; margin-bottom: 24px;">Trip statistics can only be viewed through Telegram.</p>
-              <div style="background: #f1f5f9; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
-                <div style="font-weight: 700; margin-bottom: 12px;">📱 How to Access:</div>
-                <div style="color: #475569; font-size: 14px; line-height: 1.8;">
-                  1. Open bot in <strong>Telegram</strong><br>
-                  2. Use <strong>/stats</strong> command<br>
-                  3. Tap the stats button for your trip
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-        throw new Error('Not in Telegram WebApp - initData missing');
-      }
-    })();
-    
-    const tg = window.Telegram.WebApp;
-    
-    try {
-      tg?.ready();
-      tg?.expand();
-  tg?.setHeaderColor('#f8fafc');
-      tg?.setBackgroundColor('#f8fafc');
-    } catch(e) {}
-    
-    function closeApp() {
-      try {
-        window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light');
-        tg?.close();
-      } catch(e) {
-        window.close();
-      }
-    }
 
-    // Set progress width dynamically to avoid inline template in style attribute
-    (function() {
-      const el = document.getElementById('progressFill');
-      if (!el) return;
-      const paid = parseFloat(el.getAttribute('data-paid') || '0');
-      const limit = parseFloat(el.getAttribute('data-limit') || '0');
-      const pct = limit > 0 ? Math.min(100, Math.max(0, (paid / limit) * 100)) : 0;
-      el.style.width = pct + '%';
-    })();
+  <script>
+    const tg = window.Telegram?.WebApp;
+    tg?.ready();
+    tg?.expand();
+    
+    // Animate progress ring
+    const percent = {{ ((stats.paid / trip.participant_limit) * 100)|round if trip.participant_limit else 0 }};
+    const circle = document.getElementById('progressCircle');
+    const percentText = document.getElementById('progressPercent');
+    
+    setTimeout(() => {
+      const offset = 565 - (565 * percent / 100);
+      circle.style.strokeDashoffset = offset;
+      
+      let current = 0;
+      const interval = setInterval(() => {
+        current++;
+        percentText.textContent = current + '%';
+        if (current >= percent) clearInterval(interval);
+      }, 20);
+    }, 300);
   </script>
 </body>
 </html>
