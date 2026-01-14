@@ -264,12 +264,12 @@
     <div class="section-title">All Members ({{ members|length }})</div>
     {% for m in members %}
     <div class="member-card" data-member-id="{{ m.get('id', '') }}">
-      <div class="member-avatar">{{ (m.get('name', 'U')[0])|upper }}</div>
+      <div class="member-avatar">{{ (m.get('full_name', 'U')[0])|upper }}</div>
       <div class="member-info">
-        <div class="member-name">{{ m.get('name', 'Unknown') }}</div>
-        <div class="member-email">{{ m.get('email', 'No email') }}</div>
+        <div class="member-name">{{ m.get('full_name', 'Unknown') }}</div>
+        <div class="member-email">TG ID: {{ m.get('telegram_id', 'N/A') }}</div>
         <div class="member-actions">
-          {% if m.get('has_pending_receipt', False) %}
+          {% if m.get('receipt') and m.get('payment_status') == 'not_paid' %}
           <button class="action-btn action-btn-approve js-approve" data-id="{{ m.get('id', '') }}">✓ Approve</button>
           <button class="action-btn action-btn-reject js-reject" data-id="{{ m.get('id', '') }}">✕ Reject</button>
           {% endif %}
@@ -277,15 +277,15 @@
         </div>
       </div>
       <div class="member-status">
-        {% if m.get('payment_status') == 'full' %}
+        {% if m.get('payment_status') == 'full_paid' %}
         <span class="payment-badge payment-full">FULL PAID</span>
-        {% elif m.get('payment_status') == 'half' %}
+        {% elif m.get('payment_status') == 'half_paid' %}
         <span class="payment-badge payment-half">50% PAID</span>
         {% else %}
-        <span class="payment-badge payment-pending">PENDING</span>
+        <span class="payment-badge payment-pending">NOT PAID</span>
         {% endif %}
-        {% if m.get('receipt_url') %}
-        <img src="{{ m.get('receipt_url') }}" class="receipt-preview" onclick="window.open('{{ m.get('receipt_url') }}')">
+        {% if m.get('receipt') %}
+        <span class="receipt-indicator">📄 Receipt on file</span>
         {% endif %}
       </div>
     </div>
@@ -300,7 +300,7 @@
 
   <div class="tab-content" data-content="pending">
     <div class="section-title">Pending Approvals</div>
-    {% for m in members if m.get('has_pending_receipt', False) %}
+    {% for m in members if m.get('receipt') and m.get('payment_status') == 'not_paid' %}
     <div class="member-card">
       <!-- Same member card structure -->
     </div>
@@ -315,7 +315,7 @@
 
   <div class="tab-content" data-content="paid">
     <div class="section-title">Confirmed Payments</div>
-    {% for m in members if m.get('payment_status') in ['half', 'full'] %}
+    {% for m in members if m.get('payment_status') in ['half_paid', 'full_paid'] %}
     <div class="member-card">
       <!-- Same member card structure -->
     </div>
